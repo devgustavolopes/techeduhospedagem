@@ -1,0 +1,390 @@
+/* =========================================
+   1. VARIÁVEIS E CONFIGURAÇÕES GLOBAIS
+   ========================================= */
+:root {
+    /* Paleta de Cores */
+    --primary: #9370DB;              /* Roxo Principal */
+    --primary-glow: rgba(147, 112, 219, 0.5);
+    --secondary: #00f2ff;            /* Ciano (Detalhes) */
+    
+    /* Fundos */
+    --bg-main: #050507;              /* Fundo Mais Escuro (Body) */
+    --bg-secondary: #0f0f12;         /* Fundo de Seções/Sidebar */
+    --bg-card: #141418;              /* Fundo de Cards e Modais */
+    
+    /* Efeitos */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    /* Textos */
+    --text-white: #ffffff;
+    --text-gray: #a0a0b0;
+    
+    /* Fontes */
+    --font-heading: 'Zen Dots', cursive;
+    --font-body: 'Poppins', sans-serif; 
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-white);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    /* Fundo granulado sutil */
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB9JREFUeNpi/P//PwM6YGLAAuCCmpqacCgHUQAQYAAcdA4K7/L6rAAAAABJRU5ErkJggg==');
+}
+
+h1, h2, h3, h4, h5, h6, .contact-title, .page-title {
+    font-family: var(--font-heading);
+    letter-spacing: -0.5px;
+    color: white;
+}
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background-clip: text; 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.noise-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB9JREFUeNpi/P//PwM6YGLAAuCCmpqacCgHUQAQYAAcdA4K7/L6rAAAAABJRU5ErkJggg==');
+    opacity: 0.03; pointer-events: none; z-index: 9999;
+}
+
+/* =========================================
+   2. HEADER & NAVBAR (PADRONIZADO)
+   ========================================= */
+.navbar {
+    background-color: rgba(5, 5, 7, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+    min-height: 70px !important;
+    align-items: center !important;
+}
+
+.navbar .container {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+}
+
+.logo { 
+    font-size: 1.5rem !important; 
+    color: white !important; 
+    font-family: var(--font-heading);
+    text-decoration: none;
+    line-height: 1;
+}
+
+/* Botão Voltar (Estilo Consistente: Negrito e Ícone Grosso) */
+.btn-back, .btn-back-dashboard {
+    text-decoration: none;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    font-weight: 700; /* Negrito */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-back i, .btn-back-dashboard i {
+    font-size: 1.1rem;
+    font-weight: 900;
+    text-shadow: 0 0 1px currentColor; /* Truque visual para engordar ícone */
+}
+
+.btn-back:hover, .btn-back-dashboard:hover {
+    color: var(--primary);
+    transform: translateX(-3px);
+}
+
+/* Avatar no Header */
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid var(--glass-border);
+    padding-left: 15px;
+    margin-left: 15px;
+}
+
+.avatar-small {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary), var(--primary)); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: white;
+    cursor: default;
+    box-shadow: 0 0 10px rgba(147, 112, 219, 0.3);
+}
+
+/* =========================================
+   3. FORMULÁRIOS & CARDS (Geral e Planos)
+   ========================================= */
+.content-section h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, var(--primary), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+}
+
+.content-section p {
+    color: var(--text-gray);
+    font-size: 1.1rem;
+}
+
+/* Container Glassmorphism (Fundo do Card) */
+.form-wrapper, .post-creator, .post-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem; /* Espaçamento interno padrão */
+    margin-bottom: 1.5rem; /* Espaçamento externo padrão */
+    min-height: 150px; /* Garante visibilidade do card */
+    color: var(--text-white); 
+}
+
+.form-wrapper::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+/* Inputs Unificados */
+.form-control {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white !important;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--font-body) !important;
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(147, 112, 219, 0.25);
+    color: white !important;
+}
+
+textarea.form-control { resize: vertical; min-height: 100px; }
+.form-control::placeholder { color: #666; opacity: 1; }
+
+.form-label {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-left: 4px;
+}
+
+.required-field::after { content: " *"; color: var(--primary); }
+
+/* Botões Principais (Solid Purple) */
+.btn-primary, .btn-neon {
+    background-color: var(--primary);
+    border: 1px solid var(--primary);
+    color: white;
+    font-family: var(--font-body);
+    font-weight: 600;
+    box-shadow: 0 0 15px var(--primary-glow);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 8px 24px;
+    cursor: pointer;
+    text-decoration: none; /* Garante que links com btn-primary não tenham sublinhado */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover, .btn-neon:hover {
+    background-color: #7B50C9; /* Roxo Escuro */
+    border-color: #7B50C9;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px var(--primary-glow);
+}
+
+/* Link Secundário */
+.insert-link {
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.insert-link:hover {
+    color: #fff;
+    text-shadow: 0 0 10px var(--secondary);
+}
+
+#link-input-wrapper { display: none; }
+#link-input-wrapper.is-visible { display: block !important; animation: fadeIn 0.3s ease-in-out; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   4. PÁGINA ADMIN (Tabelas e Modais)
+   ========================================= */
+.table { color: var(--text-gray); border-color: var(--glass-border); }
+.table-dark { --bs-table-bg: #1a1a20; border-bottom: 2px solid var(--primary); }
+.table-dark th { color: white; font-weight: 500; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+.table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(255, 255, 255, 0.02); color: var(--text-gray); }
+.table-hover > tbody > tr:hover > * { background-color: rgba(147, 112, 219, 0.1); color: white; }
+
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+
+/* Modal Dark */
+.modal-content {
+    background-color: var(--bg-card); border: 1px solid var(--glass-border);
+    color: var(--text-white); box-shadow: 0 0 50px rgba(0,0,0,0.7);
+}
+.modal-header { border-bottom: 1px solid var(--glass-border); }
+.modal-title { color: var(--primary); }
+.btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+.bg-light { background-color: rgba(255,255,255,0.05) !important; border: 1px solid #333 !important; color: #ccc; }
+.spinner-border.text-primary { color: var(--secondary) !important; }
+
+/* Botão Excluir Neon */
+.btn-danger-neon, .btn-outline-danger {
+    background-color: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: #ff6b6b;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none;
+}
+.btn-danger-neon:hover, .btn-outline-danger:hover {
+    background-color: #ff4444; color: white; border-color: #ff4444;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.4); transform: translateY(-2px);
+}
+
+/* =========================================
+   5. PÁGINA COMUNIDADE & PLANOS (Específicos)
+   ========================================= */
+.post-card {
+    transition: 0.3s;
+}
+.post-card:hover { border-color: var(--primary); }
+
+.badge-topic {
+    background: rgba(255,255,255,0.1); color: #ccc;
+    padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;
+    border: 1px solid var(--glass-border);
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.action-btn {
+    background: transparent; border: none; color: #aaa;
+    display: flex; align-items: center; gap: 6px; font-size: 0.9rem;
+    transition: 0.2s; cursor: pointer;
+}
+.action-btn:hover { color: white; }
+.action-btn.liked { color: #ff4444; }
+.action-btn.liked i { font-weight: bold; }
+
+/* Comentários */
+.comments-section {
+    margin-top: 1.5rem; padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+.single-comment {
+    background: rgba(255,255,255,0.03);
+    padding: 10px; border-radius: 8px; margin-bottom: 8px;
+}
+/* Nome do Usuário (Estilo Code/Dev) */
+.comment-user { 
+    color: var(--secondary);       /* Cor Ciano */
+    /* Fonte estilo código/terminal */
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.8rem;             
+    font-weight: 700;              /* Negrito */
+    letter-spacing: 0px;
+    margin-bottom: 2px;
+    display: block; 
+}
+.comment-text { color: #ddd; font-size: 0.9rem; margin: 0; }
+
+/* =========================================
+   6. PÁGINA DETALHE DO PLANO (Estudo)
+   ========================================= */
+/* Estilo do Checkbox de Tarefa */
+.form-check-input {
+    /* Força o estilo Neon no checkbox padrão do Bootstrap */
+    background-color: var(--bg-card); 
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s;
+}
+
+.form-check-input:checked {
+    /* Cor Ciano/Verde quando marcado */
+    background-color: #00ff88 !important; 
+    border-color: #00ff88 !important;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4) !important;
+}
+
+.form-check-input:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 242, 255, 0.25) !important;
+}
+
+/* Estilo para a descrição da tarefa concluída */
+.task-item label {
+    transition: color 0.3s, text-decoration 0.3s;
+}
+
+.task-item input:checked + label {
+    color: var(--text-gray);
+    text-decoration: line-through;
+}
+
+/* Estilo dos Cards de Módulo (Accordion) */
+.form-wrapper details summary {
+    transition: background-color 0.2s;
+    /* Ícone de seta personalizado para a cor primária */
+    list-style: none;
+}
+
+.form-wrapper details summary::before {
+    content: '▼';
+    color: var(--primary);
+    float: right;
+    margin-top: 5px;
+    margin-right: 15px;
+    transition: transform 0.2s ease;
+}
+
+.form-wrapper details[open] summary::before {
+    transform: rotate(180deg);
+}
