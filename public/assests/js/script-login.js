@@ -4,7 +4,8 @@
 const LOGIN_URL = "login.html";
 const HOME_URL = "index.html"; 
 let RETURN_URL = "dashboard.html"; // Página restrita padrão
-const API_URL = 'https://tech-edu-api-json.onrender.com'; // URL Padrão do JSON Serve
+// 🚨 CORRETO: URL Padrão do JSON Server
+const API_URL = 'https://tech-edu-api-json.onrender.com'; 
 
 // 💯 CORREÇÃO FINAL: DECLARANDO A VARIÁVEL USANDO A ROTA CONFIRMADA
 const COLLECTION_NAME = '/usuarios'; 
@@ -40,7 +41,7 @@ function initLoginApp() {
 
 // Carrega usuários da API
 function carregarUsuarios(callback) {
-    // Usando a rota de coleção correta (COLLECTION_NAME = /usuarios)
+    // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME
     fetch(`${API_URL}${COLLECTION_NAME}`) 
         .then(response => response.json())
         .then(data => {
@@ -88,7 +89,7 @@ function addUser(nome, login, senha, email) {
         fotoUrl: ""
     };
 
-    // Usando a rota de coleção correta para o POST
+    // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME para POST
     fetch(`${API_URL}${COLLECTION_NAME}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // --- PASSO IMPORTANTE: VERIFICAÇÃO DE DUPLICIDADE ---
-                // Agora usa a variável COLLECTION_NAME, que está definida no topo!
+                // 🚨 CORRETO: Usando a variável COLLECTION_NAME
                 const response = await fetch(`${API_URL}${COLLECTION_NAME}?login=${login}`);
                 const existingUsers = await response.json();
 
@@ -175,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 addUser(nome, login, senha, email);
 
             } catch (error) {
-                // O erro ReferenceError não deve mais ocorrer com COLLECTION_NAME definida
                 console.error("Erro ao verificar usuário:", error);
                 alert("Erro de conexão ao verificar disponibilidade do usuário.");
             }

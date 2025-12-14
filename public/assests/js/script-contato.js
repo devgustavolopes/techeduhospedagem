@@ -1,8 +1,10 @@
-// [ A "Parte 1: Lógica do Inserir Link" continua igual ]
+// --- CONFIGURAÇÃO DA API (CORREÇÃO CRÍTICA) ---
+const API_URL = 'https://tech-edu-api-json.onrender.com';
+const API_CONTATOS_URL = `${API_URL}/contatos`; // ROTA CORRETA DE ENVIO PARA O JSON SERVER
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- Parte 1: Lógica do "Inserir Link" (copie o seu código aqui) ---
+    // --- Parte 1: Lógica do "Inserir Link" ---
     const showLinkBtn = document.getElementById('show-link-input');
     const linkInputWrapper = document.getElementById('link-input-wrapper');
     const linkInput = document.getElementById('linkInput');
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // A div de status que já existe no seu HTML
     const statusMessage = document.getElementById('form-submission-status'); 
 
-    // Campos obrigatórios (copie os seus)
+    // Campos obrigatórios
     const fullname = document.getElementById('fullname');
     const email = document.getElementById('email');
     const message = document.getElementById('message');
@@ -35,10 +37,10 @@ document.addEventListener("DOMContentLoaded", function() {
     contactForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
-        // 1. Validar (sem alteração)
+        // 1. Validar
         let isValid = true;
         resetValidation([fullname, email, message]);
-        // ... (copie sua lógica de validação aqui) ...
+        
         if (fullname.value.trim() === '') {
             isValid = false;
             showError(fullname);
@@ -56,20 +58,20 @@ document.addEventListener("DOMContentLoaded", function() {
             return; // Para a execução se for inválido
         }
         
-        // 2. Desabilitar botão (sem alteração)
+        // 2. Desabilitar botão
         submitButton.disabled = true;
         submitButton.innerHTML = `
            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
            Enviando...
         `;
         
-        // 3. Coletar dados (sem alteração)
+        // 3. Coletar dados
         const formData = new FormData(contactForm);
         // Converter FormData para um objeto simples que o JSON Server entende
         const data = Object.fromEntries(formData.entries());
 
-        // 4. Enviar para o JSON Server (AQUI ESTÁ A MUDANÇA)
-        fetch('https://tech-edu-api-json.onrender.com', { // URL do JSON Server
+        // 4. Enviar para o JSON Server (CORREÇÃO APLICADA AQUI)
+        fetch(API_CONTATOS_URL, { 
             method: 'POST',
             body: JSON.stringify(data), // Envia os dados como JSON
             headers: {
@@ -86,23 +88,24 @@ document.addEventListener("DOMContentLoaded", function() {
                     showLinkBtn.click();
                 }
             } else {
-                // Erro
-                throw new Error('Falha ao enviar para o servidor.');
+                // Erro (Ex: o servidor está online mas recusou a requisição)
+                throw new Error(`Falha ao enviar para o servidor. Status: ${response.status}`);
             }
         })
         .catch(error => {
-            // Erro de rede
-            statusMessage.innerHTML = 'Oops! Erro de conexão. O JSON Server está rodando?';
+            // Erro de rede ou erro lançado acima
+            console.error('Erro de submissão:', error);
+            statusMessage.innerHTML = 'Oops! Erro de conexão. Verifique se a API está online e configurada corretamente.';
             statusMessage.className = 'mt-3 alert alert-danger';
         })
         .finally(() => {
-            // Reabilitar botão (sem alteração)
+            // Reabilitar botão
             submitButton.disabled = false;
             submitButton.innerHTML = 'Enviar';
         });
     });
 
-    // --- Funções Auxiliares (copie as suas aqui) ---
+    // --- Funções Auxiliares ---
     function showError(inputElement) {
         inputElement.classList.add('is-invalid');
     }

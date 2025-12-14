@@ -1,4 +1,4 @@
-const API_URL = 'https://tech-edu-api-json.onrender.com';// Mantenha a porta 3001
+const API_URL = 'https://tech-edu-api-json.onrender.com';
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -32,8 +32,11 @@ async function loadUserPlans() {
     container.innerHTML = `<div class="col-12 text-center py-5"><p class="text-white">Carregando planos...</p></div>`;
 
     try {
-        const fetchUrl = `${'https://tech-edu-api-json.onrender.com'}/planos?userId=${currentUser.id}`;
-        const res = await fetch('https://tech-edu-api-json.onrender.com');
+        // 🚨 CORREÇÃO: Usando a URL completa com o filtro de usuário
+        const fetchUrl = `${API_URL}/planos?userId=${currentUser.id}`; 
+        
+        // 🚨 CORREÇÃO APLICADA AQUI
+        const res = await fetch(fetchUrl); 
         const plans = await res.json();
 
         if (!res.ok) {
@@ -64,9 +67,9 @@ async function loadUserPlans() {
             card.className = 'col-md-6';
             card.innerHTML = `
     <div class="post-card h-100 d-flex flex-column" 
-         data-aos="fade-up" 
-         onclick="openPlan('${plan.id}')" 
-         style="cursor: pointer; border-color: ${badgeColor}; /* Destaque na borda */">
+          data-aos="fade-up" 
+          onclick="openPlan('${plan.id}')" 
+          style="cursor: pointer; border-color: ${badgeColor}; /* Destaque na borda */">
         
         <div class="d-flex justify-content-between align-items-start mb-3">
             <span class="badge-topic" style="color: ${badgeColor}; border-color: ${badgeColor}; background: rgba(0,0,0,0.3);">
@@ -116,7 +119,8 @@ async function loadUserPlans() {
  * Calcula a porcentagem de progresso de um plano.
  */
 function calculateProgress(plan) {
-    if (!plan.topics || typeof studyDatabase === 'undefined') return 0;
+    // Requer 'studyDatabase' do arquivo database.js
+    if (!plan.topics || typeof studyDatabase === 'undefined') return 0; 
 
     let total = 0;
     let completed = 0;
@@ -137,7 +141,8 @@ function calculateProgress(plan) {
 window.deletePlan = async (id) => {
     if (confirm("Deseja realmente excluir este plano?")) {
         try {
-            const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/planos/${id}`, { method: 'DELETE' });
+            // URL Correta para DELETE
+            const res = await fetch(`${API_URL}/planos/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Falha ao deletar.');
             loadUserPlans(); // Recarrega a lista
         } catch (error) {

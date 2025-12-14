@@ -1,4 +1,4 @@
-const API_URL = '\/api';
+const API_URL = 'https://tech-edu-api-json.onrender.com';
 let replyModalObj = null;
 
 // --- DADOS DO EMAILJS (Substitua pelos seus dados reais) ---
