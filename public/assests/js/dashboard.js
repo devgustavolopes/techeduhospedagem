@@ -1,4 +1,4 @@
-const API_URL = 'https://tech-edu-api-json.onrender.com'; // URL Base do JSON Server
+const API_URL = 'techeduvercel.vercel.app'; // URL Base do JSON Server
 let currentUser = null;
 let replyModalObj = null; // Para controlar o Modal do Bootstrap
 
