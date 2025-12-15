@@ -1,5 +1,5 @@
 // --- CONFIGURAÇÃO DA API (CORREÇÃO CRÍTICA) ---
-const API_URL = 'https://tech-edu-api-json.onrender.com';
+const API_URL = 'techeduvercel.vercel.app';
 const API_CONTATOS_URL = `${API_URL}/contatos`; // ROTA CORRETA DE ENVIO PARA O JSON SERVER
 
 document.addEventListener("DOMContentLoaded", function() {
