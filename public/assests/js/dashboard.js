@@ -1,4 +1,6 @@
-const API_URL = 'techeduvercel.vercel.app'; // URL Base do JSON Server
+// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
+const API_URL = 'https://techeduvercel.vercel.app';
+// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
 let currentUser = null;
 let replyModalObj = null; // Para controlar o Modal do Bootstrap
 

@@ -1,11 +1,13 @@
-// Arquivo: assets/js/login.js
 
+// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
 // --- CONFIGURAÇÕES (CORRIGIDAS DEFINITIVAMENTE) ---
 const LOGIN_URL = "login.html";
 const HOME_URL = "index.html"; 
 let RETURN_URL = "dashboard.html"; // Página restrita padrão
 // 🚨 CORRETO: URL Padrão do JSON Server
-const API_URL = (techeduvercel.vercel.app); 
+// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
+const API_URL = 'https://techeduvercel.vercel.app';
+// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
 
 // 💯 CORREÇÃO FINAL: DECLARANDO A VARIÁVEL USANDO A ROTA CONFIRMADA
 const COLLECTION_NAME = '/usuarios'; 
