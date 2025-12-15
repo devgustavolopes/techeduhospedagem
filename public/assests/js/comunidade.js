@@ -1,6 +1,6 @@
 // assets/js/comunidade.js
 
-const API_URL = 'https://tech-edu-api-json.onrender.com';
+const API_URL = 'techeduvercel.vercel.app';
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
