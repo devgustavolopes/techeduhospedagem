@@ -1,4 +1,4 @@
-const API_URL = 'https://tech-edu-api-json.onrender.com';
+const API_URL = 'techeduvercel.vercel.app';
 let replyModalObj = null;
 
 // --- DADOS DO EMAILJS (Substitua pelos seus dados reais) ---
@@ -36,7 +36,7 @@ async function loadMessages() {
     const elAnswered = document.getElementById('count-answered');
 
     try {
-        const res = await fetch('https://tech-edu-api-json.onrender.com');
+        const res = await fetch('techeduvercel.vercel.app');
         const messages = await res.json();
 
         // --- LÓGICA DOS CONTADORES ---
@@ -128,7 +128,7 @@ window.openReplyModal = (id, email, msgOriginal, nome, assunto) => {
 window.deleteMessage = async (id) => {
     if(confirm('Tem certeza que deseja excluir esta mensagem?')) {
         try {
-            await fetch(`${'https://tech-edu-api-json.onrender.com'}/${id}`, { method: 'DELETE' });
+            await fetch(`${'techeduvercel.vercel.app'}/${id}`, { method: 'DELETE' });
             loadMessages(); 
         } catch (error) {
             alert('Erro ao excluir mensagem.');
@@ -188,7 +188,7 @@ async function handleReplySubmit(e) {
         }
         
         // --- ETAPA 2: MARCAR COMO RESPONDIDO NO SEU SERVIDOR (APENAS SE O EMAIL FOR ENVIADO) ---
-        await fetch(`${'https://tech-edu-api-json.onrender.com'}/${id}`, {
+        await fetch(`${'https://api.emailjs.com/api/v1.0/email/send'}/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

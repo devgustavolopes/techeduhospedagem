@@ -5,7 +5,7 @@ const LOGIN_URL = "login.html";
 const HOME_URL = "index.html"; 
 let RETURN_URL = "dashboard.html"; // Página restrita padrão
 // 🚨 CORRETO: URL Padrão do JSON Server
-const API_URL = ('techeduvercel.vercel.app'); 
+const API_URL = (techeduvercel.vercel.app); 
 
 // 💯 CORREÇÃO FINAL: DECLARANDO A VARIÁVEL USANDO A ROTA CONFIRMADA
 const COLLECTION_NAME = '/usuarios'; 
@@ -42,7 +42,7 @@ function initLoginApp() {
 // Carrega usuários da API
 function carregarUsuarios(callback) {
     // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME
-    fetch(`${API_URL}${COLLECTION_NAME}`) 
+    fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}`) 
         .then(response => response.json())
         .then(data => {
             db_usuarios = data;
@@ -90,7 +90,7 @@ function addUser(nome, login, senha, email) {
     };
 
     // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME para POST
-    fetch(`${API_URL}${COLLECTION_NAME}`, {
+    fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoUsuario),
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // --- PASSO IMPORTANTE: VERIFICAÇÃO DE DUPLICIDADE ---
                 // 🚨 CORRETO: Usando a variável COLLECTION_NAME
-                const response = await fetch(`${API_URL}${COLLECTION_NAME}?login=${login}`);
+                const response = await fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}?login=${login}`);
                 const existingUsers = await response.json();
 
                 if (existingUsers.length > 0) {

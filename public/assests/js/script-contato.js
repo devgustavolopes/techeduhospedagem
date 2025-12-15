@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const data = Object.fromEntries(formData.entries());
 
         // 4. Enviar para o JSON Server (CORREÇÃO APLICADA AQUI)
-        fetch(API_CONTATOS_URL, { 
+        fetch(techeduvercel.vercel.app, { 
             method: 'POST',
             body: JSON.stringify(data), // Envia os dados como JSON
             headers: {

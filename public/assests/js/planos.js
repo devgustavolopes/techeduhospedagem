@@ -33,7 +33,7 @@ async function loadUserPlans() {
 
     try {
         // 🚨 CORREÇÃO: Usando a URL completa com o filtro de usuário
-        const fetchUrl = `${API_URL}/planos?userId=${currentUser.id}`; 
+        const fetchUrl = `${techeduvercel.vercel.app}/planos?userId=${currentUser.id}`; 
         
         // 🚨 CORREÇÃO APLICADA AQUI
         const res = await fetch(fetchUrl); 
@@ -142,7 +142,7 @@ window.deletePlan = async (id) => {
     if (confirm("Deseja realmente excluir este plano?")) {
         try {
             // URL Correta para DELETE
-            const res = await fetch(`${API_URL}/planos/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Falha ao deletar.');
             loadUserPlans(); // Recarrega a lista
         } catch (error) {

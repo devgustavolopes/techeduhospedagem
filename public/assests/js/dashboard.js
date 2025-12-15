@@ -205,7 +205,7 @@ function setupProfileForm() {
         currentUser.biografia = document.getElementById('edit-bio').value;
 
         try {
-            await fetch(`${'https://tech-edu-api-json.onrender.com'}/usuarios/${currentUser.id}`, {
+            await fetch(`${'techeduvercel.vercel.app'}/usuarios/${currentUser.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(currentUser)
@@ -227,7 +227,7 @@ function setupProfileForm() {
 // --- TELA DE ADMIN (USUÁRIOS) - COM BOTÃO BONITO ---
 async function getAdminUsersHTML() {
     try {
-        const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/usuarios`);
+        const res = await fetch(`${'techeduvercel.vercel.app'}/usuarios`);
         const users = await res.json();
 
         const rows = users.map(user => `
@@ -286,7 +286,7 @@ async function getAdminUsersHTML() {
 window.deleteUser = async (id) => {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
         try {
-            await fetch(`${'https://tech-edu-api-json.onrender.com'}/usuarios/${id}`, { method: 'DELETE' });
+            await fetch(`${'techeduvercel.vercel.app'}/usuarios/${id}`, { method: 'DELETE' });
             loadView('admin'); 
         } catch (error) {
             alert('Erro ao excluir usuário.');

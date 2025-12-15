@@ -91,7 +91,7 @@ async function handleCreatePlan(e) {
     btn.innerText = 'Salvando...';
 
     try {
-        const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/planos`, {
+        const res = await fetch(`${'techeduvercel.vercel.app'}/planos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newPlan)

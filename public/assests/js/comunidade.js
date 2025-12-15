@@ -29,7 +29,7 @@ async function loadPosts() {
     const container = document.getElementById('feed-container');
     
     try {
-        const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/posts`);
+        const res = await fetch(`${'techeduvercel.vercel.app'}/posts`);
         const posts = await res.json();
         
         // Ordena por ID decrescente (simula mais recente primeiro)
@@ -118,7 +118,7 @@ async function handleNewPost(e) {
     };
 
     try {
-        await fetch(`${'https://tech-edu-api-json.onrender.com'}/posts`, {
+        await fetch(`${'techeduvercel.vercel.app'}/posts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(novoPost)
@@ -136,7 +136,7 @@ async function handleNewPost(e) {
 window.toggleLike = async (id, currentLikes, isLiked) => {
     const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
     
-    await fetch(`${'https://tech-edu-api-json.onrender.com'}/posts/${id}`, {
+    await fetch(`${'techeduvercel.vercel.app'}/posts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ likes: newLikes, isLiked: !isLiked })
@@ -151,7 +151,7 @@ window.submitComment = async (e, postId) => {
     const text = input.value;
 
     // 1. Pega o post para não perder comentários antigos
-    const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/posts/${postId}`);
+    const res = await fetch(`${'techeduvercel.vercel.app'}/posts/${postId}`);
     const post = await res.json();
 
     const newComment = {
@@ -160,7 +160,7 @@ window.submitComment = async (e, postId) => {
     };
 
     // 2. Atualiza
-    await fetch(`${'https://tech-edu-api-json.onrender.com'}/posts/${postId}`, {
+    await fetch(`${'techeduvercel.vercel.app'}/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ comments: [...post.comments, newComment] })

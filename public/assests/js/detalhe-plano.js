@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadPlanDetails(id) {
     try {
-        const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/planos/${id}`);
+        const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${id}`);
         if (!res.ok) throw new Error('Plano não encontrado.');
         
         currentPlan = await res.json();
@@ -126,7 +126,7 @@ window.toggleTask = async (topicValue, taskIndex) => {
 
     try {
         // 2. Salva o array de tópicos ATUALIZADO no servidor
-        const res = await fetch(`${'https://tech-edu-api-json.onrender.com'}/planos/${currentPlan.id}`, {
+        const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${currentPlan.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ topics: currentPlan.topics }) // Envia apenas o campo 'topics'
