@@ -1,4 +1,4 @@
-const API_URL = 'https://tech-edu-api-json.onrender.com';
+const API_URL = 'techeduvercel.vercel.app';
 let currentPlan = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
