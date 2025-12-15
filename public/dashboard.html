@@ -30,101 +30,99 @@
                         <i class="ph-bold ph-graduation-cap"></i> Meus Planos
                     </a>
 
-                    <a href="#" class="menu-item" id="menu-perfil" data-view="profile">
-                        <i class="ph-bold ph-user"></i> Meu Perfil
-                    </a>
-
-                    <a href="comunidade.html" class="menu-item" id="menu-comunidade">
-                        <i class="ph-bold ph-users-three"></i> Comunidade
-                    </a>
-
-                    <a href="#" class="menu-item" id="menu-admin" data-view="admin" style="display: none;">
-                        <i class="ph-bold ph-users-three"></i> Gerenciar Usuários
-                    </a>
-
-                    <a href="admin-contato.html" class="menu-item" id="menu-mensagens" style="display: none;">
-                        <i class="ph-bold ph-chat-teardrop-text"></i> Mensagens
+                    <a href="comunidade.html" class="menu-item">
+                        <i class="ph-bold ph-users"></i> Comunidade
                     </a>
 
                     <a href="contato.html" class="menu-item">
-                        <i class="ph-bold ph-envelope-simple"></i> Fale Conosco
+                        <i class="ph-bold ph-envelope"></i> Fale Conosco
+                    </a>
+
+                    <a href="admin-contato.html" class="menu-item" id="menu-admin" style="display: none;">
+                        <i class="ph-bold ph-user-gear"></i> Admin Contatos
+                    </a>
+
+                    <a href="#" class="menu-item" id="menu-users" data-view="admin" style="display: none;">
+                        <i class="ph-bold ph-users-three"></i> Gerenciar Usuários
                     </a>
                 </nav>
             </div>
+            
+            <a href="#" class="menu-item" id="btn-logout" style="color: var(--danger);">
+                <i class="ph-bold ph-sign-out"></i> Sair
+            </a>
 
-            <div>
-                <a href="#" class="menu-item" id="btn-logout" style="color: #ff4444; margin-bottom: 1rem;">
-                    <i class="ph-bold ph-sign-out"></i> Sair
-                </a>
-                <div class="user-profile-sidebar">
-                    <div class="avatar-small avatar-gradient" id="sidebar-avatar">JM</div>
-                    <div class="user-info-side">
-                        <strong class="user-name" id="sidebar-name">Carregando...</strong>
-                        <small id="sidebar-role">...</small>
-                    </div>
+            <div class="user-info">
+                <div class="avatar" id="sidebar-avatar">U</div>
+                <div>
+                    <div class="name" id="sidebar-name">Usuário</div>
+                    <div class="role" id="sidebar-role">Estudante</div>
                 </div>
             </div>
         </aside>
 
-        <main class="main-content">
-            <header class="dash-header">
-                <div class="welcome-text">
-                    <h2>Olá, <span class="gradient-text" id="header-name">Usuário</span>!</h2>
-                    <p>Gerencie sua jornada tech.</p>
-                </div>
+        <main class="content">
+            <header class="content-header">
+                <h1 class="page-title">Bem-vindo(a), <span id="header-name"></span></h1>
             </header>
 
-            <div id="dynamic-content">
-            </div>
-
+            <div class="main-content" id="main-content">
+                </div>
         </main>
     </div>
 
-    <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(5px);">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content"
-                style="background: var(--bg-card); border: 1px solid var(--glass-border); box-shadow: 0 0 50px rgba(147, 112, 219, 0.2);">
-
-                <div class="modal-header" style="border-bottom: 1px solid var(--glass-border);">
-                    <h5 class="modal-title text-white">
-                        <i class="ph-bold ph-paper-plane-tilt" style="color: var(--secondary);"></i> Responder Contato
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+    <div
+      class="modal fade"
+      id="replyModal"
+      tabindex="-1"
+      aria-labelledby="replyModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="replyModalLabel">
+              Responder Mensagem
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="form-resposta-admin">
+                <div class="mb-3">
+                    <label class="text-gray small">DE:</label>
+                    <p id="reply-email-display" style="color: var(--primary);"></p>
                 </div>
 
-                <div class="modal-body">
-                    <form id="form-reply">
-                        <div class="mb-3">
-                            <label class="text-gray small">PARA:</label>
-                            <input type="text" id="reply-to" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="text-gray small">MENSAGEM ORIGINAL:</label>
-                            <div class="p-3 rounded"
-                                style="background: rgba(255,255,255,0.05); color: #ccc; font-style: italic;">
-                                <p id="reply-original" class="mb-0">...</p>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="text-gray">Sua Resposta:</label>
-                            <textarea id="reply-body" class="form-control" rows="5"
-                                placeholder="Olá, obrigado pelo contato..."></textarea>
-                        </div>
-
-                        <input type="hidden" id="reply-id">
-
-                        <div class="text-end">
-                            <button type="button" class="btn btn-outline-light me-2"
-                                data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn-primary small">Enviar Resposta</button>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label class="text-gray small">MENSAGEM ORIGINAL:</label>
+                    <div class="p-3 rounded"
+                        style="background: rgba(255,255,255,0.05); color: #ccc; font-style: italic;">
+                        <p id="reply-original" class="mb-0">...</p>
+                    </div>
                 </div>
-            </div>
+
+                <div class="mb-3">
+                    <label class="text-gray">Sua Resposta:</label>
+                    <textarea id="reply-body" class="form-control" rows="5"
+                        placeholder="Olá, obrigado pelo contato..."></textarea>
+                </div>
+
+                <input type="hidden" id="reply-id">
+
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-light me-2"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn-primary small">Enviar Resposta</button>
+                </div>
+            </form>
         </div>
+        </div>
+      </div>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -132,7 +130,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="assets/js/dashboard.js"></script>
-</body>
+    <script src="js/supabaseClient.js" type="module"></script>
+    <script src="assets/js/dashboard.js" type="module"></script>
 
+</body>
 </html>

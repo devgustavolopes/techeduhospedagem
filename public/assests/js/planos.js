@@ -1,7 +1,14 @@
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+// Arquivo: planos.js
+
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// REMOVIDO: const API_URL = 'techeduvercel.vercel.app';
 let currentUser = null;
+
+// Requer a variável global studyDatabase do database.js
+// @ts-ignore
+const studyDatabase = window.studyDatabase; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verificação de Login
@@ -21,12 +28,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * Busca e renderiza os planos do usuário logado no JSON Server.
+ * Busca e renderiza os planos do usuário logado no Supabase (GET com filtro).
  */
 async function loadUserPlans() {
     const container = document.getElementById('plans-list');
-
-    // Garantindo que o container pai esteja com as cores de debug
     container.style.opacity = '1';
     container.style.minHeight = '200px';
     container.style.padding = '20px';
@@ -34,94 +39,63 @@ async function loadUserPlans() {
     container.innerHTML = `<div class="col-12 text-center py-5"><p class="text-white">Carregando planos...</p></div>`;
 
     try {
-        // 🚨 CORREÇÃO: Usando a URL completa com o filtro de usuário
-        const fetchUrl = `${techeduvercel.vercel.app}/planos?userId=${currentUser.id}`; 
+        // 🚨 CORREÇÃO GET: Usando Supabase para buscar planos do usuário
+        const { data: planos, error } = await supabase
+            .from('planos')
+            .select('*')
+            .eq('userId', currentUser.id) // Filtra planos onde userId é igual ao ID do usuário atual
+            .order('createdAt', { ascending: false }); // Ordena por data de criação
+
+        if (error) throw new Error(error.message);
         
-        // 🚨 CORREÇÃO APLICADA AQUI
-        const res = await fetch(fetchUrl); 
-        const plans = await res.json();
-
-        if (!res.ok) {
-            throw new Error(`Falha no servidor: ${res.status}`);
-        }
-
-        container.innerHTML = ''; // Limpa o carregamento
-
-        if (plans.length === 0) {
+        if (planos.length === 0) {
             container.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    <i class="ph-duotone ph-notebook" style="font-size: 4rem; opacity: 0.5; margin-bottom: 1rem;"></i>
-                    <p>Você ainda não criou nenhum plano de estudos.</p>
+                <div class="col-12 text-center py-5">
+                    <p class="text-white">Você não tem planos de estudo criados.</p>
+                    <a href="criar-planos.html" class="btn btn-primary">Começar agora!</a>
                 </div>`;
             return;
         }
 
-        plans.forEach(plan => {
+        // Renderização dos cards
+        let html = '';
+        planos.forEach(plan => {
             const progress = calculateProgress(plan);
-
-            // Define cores dinamicamente
-            let badgeColor = 'var(--primary)';
-            if (plan.category === 'hardware') badgeColor = '#00f2ff';
-            if (plan.category === 'software') badgeColor = '#00ff88';
-
-            // --- INJEÇÃO DO CARD COM ESTILO FORÇADO ---
-            const card = document.createElement('div');
-            card.className = 'col-md-6';
-            card.innerHTML = `
-    <div class="post-card h-100 d-flex flex-column" 
-          data-aos="fade-up" 
-          onclick="openPlan('${plan.id}')" 
-          style="cursor: pointer; border-color: ${badgeColor}; /* Destaque na borda */">
-        
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <span class="badge-topic" style="color: ${badgeColor}; border-color: ${badgeColor}; background: rgba(0,0,0,0.3);">
-                ${plan.category.toUpperCase()}
-            </span>
-            <button class="btn btn-sm" style="color: #ff4444;" onclick="event.stopPropagation(); deletePlan('${plan.id}');">
-                <i class="ph-bold ph-trash"></i>
-            </button>
-        </div>
-        
-        <h4 class="text-white mb-2">${plan.title}</h4>
-        
-        <p class="form-label small mb-4" style="color: var(--text-gray); font-size: 0.9rem; max-height: 40px; overflow: hidden;">
-            ${plan.description}
-        </p>
-        
-        <div class="mb-3 mt-auto">
-            <div class="d-flex justify-content-between text-white small mb-1">
-                <span>Progresso</span>
-                <span>${progress}%</span>
-            </div>
-            <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1);">
-                <div class="progress-bar" style="width: ${progress}%; background: ${badgeColor};"></div>
-            </div>
-        </div>
-
-        <button class="btn-primary w-100" style="
-            border: 1px solid ${badgeColor}; 
-            color: white; 
-            background: transparent;
-            /* Usando a cor do badge para hover sutil */
-        ">
-            Continuar
-        </button>
-    </div>
-`;
-            container.appendChild(card);
+            const levelColor = getLevelColor(plan.level);
+            
+            html += `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card plan-card glass-bg">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">${plan.title}</h5>
+                            <p class="card-text text-light-gray mb-1">${plan.topics.length} tópicos | <span style="color: ${levelColor}">${plan.level}</span></p>
+                            
+                            <div class="progress my-2" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: ${progress}%;" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="card-text text-light-gray">${progress}% Concluído</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openPlan('${plan.id}')">Ver Detalhes</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deletePlan('${plan.id}')">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
+        container.innerHTML = html;
 
     } catch (error) {
         console.error('Erro ao carregar planos:', error);
-        container.innerHTML = '<p class="text-danger text-center py-5">Não foi possível carregar os planos. Verifique sua conexão e se o JSON Server está rodando na porta 3001.</p>';
+        container.innerHTML = '<p class="text-danger text-center py-5">Não foi possível carregar os planos. Verifique a conexão com o Supabase e a política RLS (SELECT).</p>';
     }
 }
 
 /**
- * Calcula a porcentagem de progresso de um plano.
+ * Calcula a porcentagem de progresso de um plano. (Lógica inalterada)
  */
 function calculateProgress(plan) {
-    // Requer 'studyDatabase' do arquivo database.js
     if (!plan.topics || typeof studyDatabase === 'undefined') return 0; 
 
     let total = 0;
@@ -138,22 +112,41 @@ function calculateProgress(plan) {
     return total === 0 ? 0 : Math.round((completed / total) * 100);
 }
 
+// Funções Auxiliares (mantidas inalteradas)
+function getLevelColor(level) {
+    switch(level) {
+        case 'Iniciante': return '#30a3f9';
+        case 'Intermediário': return '#f5c634';
+        case 'Avançado': return '#f54242';
+        default: return '#ccc';
+    }
+}
+
 // --- Funções Globais ---
 
-window.deletePlan = async (id) => {
-    if (confirm("Deseja realmente excluir este plano?")) {
-        try {
-            // URL Correta para DELETE
-            const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Falha ao deletar.');
-            loadUserPlans(); // Recarrega a lista
-        } catch (error) {
-            alert('Erro ao deletar o plano. Tente novamente.');
-        }
-    }
-};
-
+// Redireciona para os detalhes do plano
 window.openPlan = (id) => {
     sessionStorage.setItem('currentPlanId', id);
     window.location.href = 'detalhe-plano.html';
+};
+
+// Deletar Plano (DELETE) - AGORA USANDO SUPABASE
+window.deletePlan = async (id) => {
+    if (confirm("Deseja realmente excluir este plano?")) {
+        try {
+            // 🚨 CORREÇÃO DELETE: Usando Supabase para deletar
+            const { error } = await supabase
+                .from('planos')
+                .delete()
+                .eq('id', id); // Deleta o registro com o ID correspondente
+            
+            if (error) throw new Error(error.message);
+
+            alert('Plano excluído com sucesso.');
+            loadUserPlans(); 
+        } catch (error) {
+            console.error('Erro ao excluir plano:', error);
+            alert(`❌ Erro ao excluir plano. Verifique a política RLS (DELETE). Detalhe: ${error.message}`);
+        }
+    }
 };

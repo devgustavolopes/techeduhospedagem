@@ -29,17 +29,34 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: 0.3s;
-        margin-bottom: 20px;
       }
 
       .btn-back-dashboard:hover {
-        color: var(--primary);
-        transform: translateX(-5px);
+        color: var(--secondary);
+      }
+
+      .status-respondido {
+        background-color: rgba(30, 200, 30, 0.1);
+        color: #3fcf3f;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+      }
+
+      .status-pendente {
+        background-color: rgba(255, 165, 0, 0.1);
+        color: orange;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+      }
+
+      .modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
       }
     </style>
   </head>
-
   <body>
     <div class="noise-overlay"></div>
 
@@ -48,119 +65,49 @@
         <a class="navbar-brand logo" href="dashboard.html"
           >TechEdu<span style="color: #9370db">.</span></a
         >
-
         <div class="d-flex align-items-center gap-3">
-          <a href="dashboard.html" class="btn-back">
+          <a href="dashboard.html" class="btn-back-dashboard">
             <i class="ph-bold ph-arrow-left"></i> Voltar ao Dashboard
           </a>
           <div class="user-profile-header">
-            <div class="avatar-small" id="header-avatar">U</div>
+            <div class="avatar-small" id="header-avatar">A</div>
+            <span class="header-name">Admin</span>
           </div>
         </div>
       </div>
     </header>
 
-    <main class="container" style="margin-top: 100px">
-      <div data-aos="fade-right">
-        <a href="dashboard.html" class="btn-back-dashboard">
-          <i class="ph-bold ph-arrow-left"></i> Voltar ao Dashboard
-        </a>
-      </div>
-
-      <div class="row mb-5" data-aos="fade-up">
-        <div class="col-md-4">
-          <div class="form-wrapper p-3 d-flex align-items-center gap-3">
-            <div
-              style="
-                background: rgba(147, 112, 219, 0.2);
-                padding: 10px;
-                border-radius: 8px;
-                color: var(--primary);
-                font-size: 1.5rem;
-              "
-            >
-              <i class="ph-bold ph-envelope-open"></i>
-            </div>
-            <div>
-              <h4 class="mb-0 text-white" id="count-total">0</h4>
-              <small class="form-label small">Total de Mensagens</small>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-wrapper p-3 d-flex align-items-center gap-3">
-            <div
-              style="
-                background: rgba(0, 242, 255, 0.2);
-                padding: 10px;
-                border-radius: 8px;
-                color: var(--secondary);
-                font-size: 1.5rem;
-              "
-            >
-              <i class="ph-bold ph-clock"></i>
-            </div>
-            <div>
-              <h4 class="mb-0 text-white" id="count-pending">0</h4>
-              <small class="form-label small">Aguardando resposta</small>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-wrapper p-3 d-flex align-items-center gap-3">
-            <div
-              style="
-                background: rgba(0, 255, 136, 0.2);
-                padding: 10px;
-                border-radius: 8px;
-                color: #00ff88;
-                font-size: 1.5rem;
-              "
-            >
-              <i class="ph-bold ph-check-circle"></i>
-            </div>
-            <div>
-              <h4 class="mb-0 text-white" id="count-answered">0</h4>
-              <small class="form-label small">Respondidos</small>
-            </div>
-          </div>
+    <main class="container" style="margin-top: 100px; max-width: 1000px">
+      <div class="text-center mb-5" data-aos="fade-down">
+        <h1 class="page-title">
+          Painel de <span class="gradient-text">Contatos</span>
+        </h1>
+        <p class="form-label small">Gerencie as mensagens e responda aos usuários.</p>
+        <div class="d-flex justify-content-center gap-3 mt-3 small">
+          <span class="badge bg-secondary"
+            >Total: <span id="count-total">0</span></span
+          >
+          <span class="badge bg-warning"
+            >Pendentes: <span id="count-pending">0</span></span
+          >
         </div>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="contact-title">Gerenciar Contatos</h2>
-        <button
-          class="btn btn-sm btn-outline-light"
-          onclick="location.reload()"
-        >
-          <i class="ph-bold ph-arrows-clockwise"></i> Atualizar
-        </button>
-      </div>
-
-      <div
-        class="form-wrapper p-0 overflow-hidden"
-        data-aos="fade-up"
-        data-aos-delay="100"
-      >
+      <div class="table-container" data-aos="fade-up">
         <div class="table-responsive">
-          <table class="table table-dark table-hover align-middle mb-0">
+          <table class="table table-dark table-hover">
             <thead>
               <tr>
-                <th scope="col" class="ps-4">Nome</th>
-                <th scope="col">Email</th>
-                <th scope="col">Assunto</th>
-                <th scope="col">Mensagem</th>
-                <th scope="col">Link</th>
-                <th scope="col" class="text-end pe-4">Ações</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Assunto</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody id="lista-contatos">
               <tr>
-                <td colspan="6" class="text-center py-5">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                  </div>
-                </td>
+                <td colspan="5" class="text-center text-muted">Carregando...</td>
               </tr>
             </tbody>
           </table>
@@ -168,16 +115,22 @@
       </div>
     </main>
 
-    <div class="modal fade" id="modalResposta" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
+    <div
+      class="modal fade"
+      id="modalResposta"
+      tabindex="-1"
+      aria-labelledby="modalRespostaLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title d-flex align-items-center gap-2">
-              <i class="ph-bold ph-paper-plane-tilt"></i> Responder Contato
+            <h5 class="modal-title" id="modalRespostaLabel">
+              Responder Mensagem de: <span id="reply-name"></span>
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
@@ -185,57 +138,52 @@
           <div class="modal-body">
             <form id="form-resposta">
               <div class="mb-3">
-                <label class="form-label small">PARA:</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="email-destinatario"
-                  readonly
-                  style="background: rgba(255, 255, 255, 0.05)"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label small">MENSAGEM ORIGINAL:</label>
+                <label class="text-gray small">MENSAGEM ORIGINAL:</label>
                 <div
-                  class="p-3 border border-secondary rounded"
-                  style="background: rgba(0, 0, 0, 0.2); color: #ccc"
+                  class="p-3 rounded"
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #ccc;
+                    font-style: italic;
+                  "
                 >
-                  <i class="ph-fill ph-quotes text-secondary mb-2 d-block"></i>
-                  <p id="original-message-display" class="fst-italic mb-0">
-                    ...
-                  </p>
+                  <p id="reply-original" class="mb-0">...</p>
+                  <a
+                    href="#"
+                    target="_blank"
+                    id="reply-link"
+                    class="small text-decoration-underline"
+                    style="color: var(--secondary); display: none"
+                    >Ver link anexado</a
+                  >
                 </div>
               </div>
 
               <div class="mb-3">
-                <label for="corpo-resposta" class="form-label small"
-                  >Sua Resposta:</label
-                >
+                <label class="text-gray">Sua Resposta (E-mail):</label>
                 <textarea
+                  id="reply-body"
                   class="form-control"
-                  id="corpo-resposta"
-                  rows="6"
-                  required
+                  rows="5"
                   placeholder="Olá, obrigado pelo contato..."
+                  required
                 ></textarea>
               </div>
 
-              <input type="hidden" id="contato-id-hidden" />
-              <input type="hidden" id="nome-destinatario-hidden" />
-              <input type="hidden" id="assunto-original-hidden" />
-              <input type="hidden" id="mensagem-original-hidden" />
-              <div class="d-flex justify-content-end gap-2">
+              <input type="hidden" id="reply-id" />
+              <input type="hidden" id="reply-email" />
+
+              <div class="text-end">
                 <button
                   type="button"
-                  class="btn btn-outline-light"
+                  class="btn btn-outline-light me-2"
                   data-bs-dismiss="modal"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  class="btn btn-primary"
+                  class="btn-primary small"
                   id="btn-enviar-resposta"
                 >
                   <i class="ph-bold ph-paper-plane-right"></i> Enviar
@@ -253,7 +201,8 @@
       AOS.init();
     </script>
 
-    <script src="assets/js/admin-contato.js"></script>
+    <script src="js/supabaseClient.js" type="module"></script>
+    <script src="assets/js/admin-contato.js" type="module"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -276,12 +225,8 @@
         }
 
         // 3. ATUALIZA O NOME NO CABEÇALHO (Igual ao Dashboard)
-        const nameElement = document.getElementById("header-user-name");
-        if (nameElement) {
-          // Pega só o primeiro nome
-          const primeiroNome = user.nome.split(" ")[0];
-          nameElement.innerText = `Olá, ${primeiroNome}`;
-        }
+        const nameElement = document.querySelector(".header-name");
+        if(nameElement) nameElement.innerText = user.nome.split(' ')[0];
       });
     </script>
   </body>

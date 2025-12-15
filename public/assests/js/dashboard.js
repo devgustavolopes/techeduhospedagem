@@ -1,8 +1,15 @@
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+// Arquivo: dashboard.js
+
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// REMOVIDO: const API_URL = 'techeduvercel.vercel.app'; 
 let currentUser = null;
-let replyModalObj = null; // Para controlar o Modal do Bootstrap
+let replyModalObj = null; 
+
+// Requer a variável global studyDatabase do database.js
+// @ts-ignore
+const studyDatabase = window.studyDatabase; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. VERIFICAÇÃO DE SEGURANÇA
@@ -12,8 +19,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     currentUser = JSON.parse(userJson);
+    
+    // Se não for admin, redireciona (ou limita a visualização)
+    if (currentUser.tipoUsuario !== 'admin') {
+        // Redireciona usuários normais para outra view ou esconde o menu Admin
+        // Por enquanto, apenas esconde o link 'Admin' se ele existir.
+        const adminLink = document.getElementById('sidebar-admin-link');
+        if (adminLink) adminLink.style.display = 'none';
+    }
 
-    // 2. INICIALIZAÇÃO DO MODAL DE RESPOSTA
+    // 2. INICIALIZAÇÃO DO MODAL DE RESPOSTA (Se necessário para uso futuro)
     const modalEl = document.getElementById('replyModal');
     if (modalEl) {
         // @ts-ignore
@@ -27,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupReplyForm(); 
 });
 
-// --- CONFIGURAÇÃO DA SIDEBAR ---
+// --- FUNÇÕES DE SETUP (Inalteradas) ---
 function setupSidebar() {
     document.getElementById('sidebar-name').innerText = currentUser.nome;
     document.getElementById('header-name').innerText = currentUser.nome.split(' ')[0];
@@ -36,234 +51,107 @@ function setupSidebar() {
     document.getElementById('sidebar-role').innerText = roleLabel;
     
     document.getElementById('sidebar-avatar').innerText = currentUser.nome.charAt(0);
-
-    // Se for Admin, mostra os menus ocultos
-    if (currentUser.tipoUsuario === 'admin') {
-        const adminMenu = document.getElementById('menu-admin');
-        const msgMenu = document.getElementById('menu-mensagens');
-        if (adminMenu) adminMenu.style.display = 'flex';
-        if (msgMenu) msgMenu.style.display = 'flex';
-    }
-
-    // Configura o botão de Logout
-    document.getElementById('btn-logout').addEventListener('click', (e) => {
-        e.preventDefault();
-        sessionStorage.removeItem('usuarioCorrente');
-        window.location.href = 'index.html';
-    });
 }
 
-// --- NAVEGAÇÃO DO MENU ---
 function setupNavigation() {
-    const links = document.querySelectorAll('.menu-item[data-view]');
-    links.forEach(link => {
-        link.addEventListener('click', (e) => {
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            document.querySelectorAll('.menu-item').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            const view = link.getAttribute('data-view');
-            loadView(view);
+            const viewName = this.getAttribute('data-view');
+            if (viewName) {
+                loadView(viewName);
+            }
         });
     });
 }
 
-// --- ROTEADOR DE CONTEÚDO ---
-async function loadView(viewName) {
-    const container = document.getElementById('dynamic-content');
+function loadView(view) {
+    document.querySelectorAll('.dashboard-view').forEach(v => {
+        // @ts-ignore
+        v.style.display = v.id === `${view}-view` ? 'block' : 'none';
+    });
     
-    container.innerHTML = `
-        <div class="d-flex justify-content-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-        </div>`;
-
-    if (viewName === 'home') {
-        container.innerHTML = getHomeHTML();
-        if(window.AOS) window.AOS.refresh(); 
-    } 
-    else if (viewName === 'profile') {
-        container.innerHTML = getProfileHTML();
-        setupProfileForm(); 
-    } 
-    else if (viewName === 'admin') {
-        if (currentUser.tipoUsuario !== 'admin') return loadView('home');
-        container.innerHTML = await getAdminUsersHTML();
+    // Renderiza o conteúdo da view
+    const viewContainer = document.getElementById(`${view}-view`);
+    if (viewContainer) {
+        switch (view) {
+            case 'admin':
+                viewContainer.innerHTML = renderAdminView();
+                break;
+            case 'planos':
+                viewContainer.innerHTML = renderPlanosView();
+                break;
+            case 'home':
+                viewContainer.innerHTML = renderHomeView();
+                break;
+            // ... outros casos
+        }
     }
 }
 
-// ====================================================================
-// 1. TELA HOME (DASHBOARD)
-// ====================================================================
-function getHomeHTML() {
+// --- VISUALIZAÇÕES DAS VIEWS (GET) ---
+
+function renderHomeView() {
+    // Conteúdo da Home View (Estática ou com dados do usuário)
     return `
-        <section class="dashboard-hero" data-aos="fade-up">
-            <div class="dash-hero-content">
-                <span class="badge-continue">RESUMO</span>
-                <h3>Olá, ${currentUser.nome.split(' ')[0]}!</h3>
-                <p style="color: #ccc; margin-bottom: 1rem;">O que vamos aprender hoje?</p>
-                
-                <button class="btn-primary" onclick="window.location.href='planos.html'" style="padding: 10px 25px; margin-top: 10px;">
-                    <i class="ph-bold ph-rocket-launch"></i> Continuar Estudando
-                </button>
+        <div class="glass-bg p-4 rounded shadow-lg text-white">
+            <h2 class="text-primary mb-3">Bem-vindo(a), ${currentUser.nome.split(' ')[0]}!</h2>
+            <p>Este é o seu painel. Use a barra lateral para navegar.</p>
+            ${currentUser.tipoUsuario === 'admin' ? 
+                '<p class="text-warning">Você tem acesso de Administrador. Use com responsabilidade.</p>' : 
+                '<p>Você está logado como estudante.</p>'
+            }
             </div>
-        </section>
-        
-        <h3 class="text-white mb-3">Acesso Rápido</h3>
-        <div class="courses-grid">
-            
-            <div class="course-card" onclick="window.location.href='planos.html'" style="cursor: pointer; border-color: var(--secondary);">
-                <div class="card-header-course">
-                    <div class="card-icon" style="color: var(--secondary); background: rgba(0, 242, 255, 0.1);">
-                        <i class="ph-bold ph-graduation-cap"></i>
-                    </div>
-                </div>
-                <div>
-                    <h4 style="color: var(--secondary);">Meus Planos</h4>
-                    <small>Gerenciar trilhas e progresso</small>
-                </div>
-                <button class="btn-start">Acessar</button>
-            </div>
+    `;
+}
 
-            <div class="course-card" onclick="window.location.href='comunidade.html'" style="cursor: pointer;">
-                <div class="card-header-course"><div class="card-icon"><i class="ph-bold ph-users-three"></i></div></div>
-                <div><h4>Comunidade</h4><small>Fórum e discussões</small></div>
-                <button class="btn-start">Entrar</button>
-            </div>
-
-            <div class="course-card" onclick="loadView('profile')" style="cursor: pointer;">
-                <div class="card-header-course"><div class="card-icon"><i class="ph-bold ph-user"></i></div></div>
-                <div><h4>Meu Perfil</h4><small>Ver e editar dados</small></div>
-                <button class="btn-start">Acessar</button>
-            </div>
-
-            ${currentUser.tipoUsuario === 'admin' ? `
-            <div class="course-card" onclick="loadView('admin')" style="cursor: pointer;">
-                <div class="card-header-course"><div class="card-icon"><i class="ph-bold ph-users"></i></div></div>
-                <div><h4>Gestão</h4><small>Administrar usuários</small></div>
-                <button class="btn-start">Acessar</button>
-            </div>
-            
-            <div class="course-card" onclick="window.location.href='admin-contato.html'" style="cursor: pointer;">
-                <div class="card-header-course"><div class="card-icon"><i class="ph-bold ph-envelope"></i></div></div>
-                <div><h4>Mensagens</h4><small>Ir para painel de mensagens</small></div>
-                <button class="btn-start">Acessar</button>
-            </div>
-            ` : ''}
+function renderPlanosView() {
+    // Simples link para a página de planos reais
+     return `
+        <div class="glass-bg p-4 rounded shadow-lg text-white">
+            <h2 class="text-primary mb-3">Meus Planos de Estudo</h2>
+            <p>Clique <a href="planos.html" class="text-info">aqui</a> para gerenciar seus planos de estudo.</p>
         </div>
     `;
 }
 
-// ====================================================================
-// 2. TELA DE PERFIL (CORRIGIDA: BIOGRAFIA EMBAIXO)
-// ====================================================================
-function getProfileHTML() {
-    return `
-        <div class="form-wrapper p-4" style="background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--glass-border);">
-            <h3 class="text-white mb-4">Editar Meus Dados</h3>
-            
-            <form id="form-perfil" class="tech-form">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-gray d-block">Nome Completo</label>
-                        <input type="text" id="edit-nome" class="form-control" value="${currentUser.nome}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-gray d-block">Email</label>
-                        <input type="email" id="edit-email" class="form-control" value="${currentUser.email}">
-                    </div>
+// Carrega a view de Administração (Usuários) - GET no Supabase
+async function renderAdminView() {
+    if (currentUser.tipoUsuario !== 'admin') {
+        return '<h3 class="text-danger">Acesso Negado.</h3>';
+    }
 
-                    <div class="col-md-6">
-                        <label class="form-label text-gray d-block">Profissão</label>
-                        <input type="text" id="edit-profissao" class="form-control" value="${currentUser.profissao || ''}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-gray d-block">Localização</label>
-                        <input type="text" id="edit-local" class="form-control" value="${currentUser.localizacao || ''}">
-                    </div>
+    const { data: usuarios, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('id', { ascending: true });
+    
+    if (error) {
+        console.error('Erro Supabase ao carregar usuários:', error);
+        return '<h3 class="text-danger">Erro ao carregar usuários de administração.</h3>';
+    }
 
-                    <div class="col-12">
-                        <label class="form-label text-gray d-block" style="margin-bottom: 8px;">Biografia</label>
-                        <textarea id="edit-bio" class="form-control" rows="4" style="width: 100%; min-height: 100px;">${currentUser.biografia || ''}</textarea>
-                    </div>
-
-                    <div class="col-12 text-end mt-4">
-                        <button type="submit" class="btn-primary small">Salvar Alterações</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function setupProfileForm() {
-    document.getElementById('form-perfil').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        currentUser.nome = document.getElementById('edit-nome').value;
-        currentUser.email = document.getElementById('edit-email').value;
-        currentUser.profissao = document.getElementById('edit-profissao').value;
-        currentUser.localizacao = document.getElementById('edit-local').value;
-        currentUser.biografia = document.getElementById('edit-bio').value;
-
-        try {
-            await fetch(`${'techeduvercel.vercel.app'}/usuarios/${currentUser.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentUser)
-            });
-            
-            sessionStorage.setItem('usuarioCorrente', JSON.stringify(currentUser));
-            setupSidebar(); 
-            alert('Perfil atualizado com sucesso!');
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao salvar alterações.');
-        }
-    });
-}
-
-// ====================================================================
-// 3. TELA DE ADMIN - USUÁRIOS (CORRIGIDA: BOTÃO COM CSS)
-// ====================================================================
-// --- TELA DE ADMIN (USUÁRIOS) - COM BOTÃO BONITO ---
-async function getAdminUsersHTML() {
     try {
-        const res = await fetch(`${'techeduvercel.vercel.app'}/usuarios`);
-        const users = await res.json();
+        let rows = '';
+        usuarios.forEach(user => {
+            const deleteBtn = user.id !== currentUser.id 
+                ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.id}')">Excluir</button>`
+                : `<button class="btn btn-sm btn-outline-secondary" disabled>Você</button>`;
 
-        const rows = users.map(user => `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <td style="padding: 15px; color: white; vertical-align: middle;">
-                    <div style="font-weight: 600;">${user.nome}</div>
-                </td>
-                <td style="padding: 15px; color: #aaa; vertical-align: middle;">@${user.login}</td>
-                <td style="padding: 15px; vertical-align: middle;">
-                    <span class="badge ${user.tipoUsuario === 'admin' ? 'bg-danger' : 'bg-primary'}" 
-                          style="padding: 8px 12px; border-radius: 6px;">
-                        ${user.tipoUsuario}
-                    </span>
-                </td>
-                <td style="padding: 15px; vertical-align: middle;">
-                    ${user.id !== currentUser.id ? 
-                    /* AQUI ESTÁ O NOVO BOTÃO COM A CLASSE NEON */
-                    `<button onclick="deleteUser('${user.id}')" class="btn-danger-neon">
-                        <i class="ph-bold ph-trash"></i> Excluir
-                     </button>` 
-                    : '<span style="color: var(--primary); font-weight: bold; font-size: 0.9rem;">(Você)</span>'}
-                </td>
-            </tr>
-        `).join('');
-
+            rows += `
+                <tr class="text-white">
+                    <td style="padding: 15px; border-bottom: 1px solid var(--glass-border);">${user.nome}</td>
+                    <td style="padding: 15px; border-bottom: 1px solid var(--glass-border);">${user.login}</td>
+                    <td style="padding: 15px; border-bottom: 1px solid var(--glass-border);">${user.tipoUsuario}</td>
+                    <td style="padding: 15px; border-bottom: 1px solid var(--glass-border);">${deleteBtn}</td>
+                </tr>
+            `;
+        });
+        
+        // Retorna a estrutura HTML com a lista de usuários
         return `
-            <div class="form-wrapper p-4" style="background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--glass-border);">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="text-white mb-0">Gerenciar Usuários</h3>
-                    <div style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; color: white; font-size: 0.9rem;">
-                        Total: <strong>${users.length}</strong>
-                    </div>
-                </div>
-                
+            <div class="glass-bg p-4 rounded shadow-lg">
+                <h2 class="text-primary mb-4">Gerenciamento de Usuários</h2>
                 <div class="table-responsive">
                     <table style="width: 100%; text-align: left; border-collapse: collapse;">
                         <thead style="color: var(--primary); border-bottom: 2px solid var(--glass-border);">
@@ -284,18 +172,27 @@ async function getAdminUsersHTML() {
     }
 }
 
-// Função Global para deletar (Admin)
+// Função Global para deletar (Admin) - DELETE no Supabase
 window.deleteUser = async (id) => {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
         try {
-            await fetch(`${'techeduvercel.vercel.app'}/usuarios/${id}`, { method: 'DELETE' });
-            loadView('admin'); 
+            // 🚨 CORREÇÃO DELETE: Usando Supabase para deletar
+            const { error } = await supabase
+                .from('usuarios')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw new Error(error.message);
+
+            alert('Usuário excluído com sucesso.');
+            loadView('admin'); // Recarrega a view de administração
         } catch (error) {
-            alert('Erro ao excluir usuário.');
+            console.error('Erro ao excluir usuário:', error);
+            alert(`❌ Erro ao excluir usuário. Verifique a política RLS (DELETE). Detalhe: ${error.message}`);
         }
     }
 };
 
-// Funções do Modal de Mensagens (Caso precise no futuro, já estão aqui)
-window.openReply = (id, email, originalMsg) => { /* ... lógica mantida se necessário ... */ };
-function setupReplyForm() { /* ... lógica mantida ... */ }
+// Funções do Modal de Mensagens (Mantidas vazias pois a lógica está em admin-contato.js)
+function setupReplyForm() { /* ... */ }
+window.openReply = (id, email, originalMsg) => { /* ... */ };

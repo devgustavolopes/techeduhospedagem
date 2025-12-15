@@ -1,8 +1,9 @@
-// assets/js/comunidade.js
+// Arquivo: comunidade.js
 
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// REMOVIDO: const API_URL = 'techeduvercel.vercel.app';
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,156 +27,180 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', handleNewPost);
 });
 
-// --- CARREGAR POSTS ---
+// --- CARREGAR POSTS (GET) - AGORA USANDO SUPABASE --
 async function loadPosts() {
     const container = document.getElementById('feed-container');
     
     try {
-        const res = await fetch(`${'techeduvercel.vercel.app'}/posts`);
-        const posts = await res.json();
-        
-        // Ordena por ID decrescente (simula mais recente primeiro)
-        posts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        // 🚨 CORREÇÃO GET: Busca posts do Supabase
+        const { data: posts, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('createdAt', { ascending: false }); // Ordena por data de criação
 
+        if (error) throw new Error(error.message);
+        
         if(posts.length === 0) {
-            container.innerHTML = '<p class="text-center text-muted">Seja o primeiro a postar!</p>';
+            container.innerHTML = `<div class="col-12 text-center py-5"><p class="text-white">Nenhum post ainda. Seja o primeiro a criar!</p></div>`;
             return;
         }
 
-        container.innerHTML = posts.map(post => `
-            <div class="post-card" data-aos="fade-up">
-                <div class="d-flex gap-3 mb-3">
-                    <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #333, #555); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight:bold; font-size: 1.2rem;">
-                        ${post.user.username.charAt(1)}
-                    </div>
-                    <div>
-                        <h5 class="text-white mb-0" style="font-size: 1rem;">${post.user.username}</h5>
-                        <small style="color: #aaa;">${post.user.occupation || 'Membro da Comunidade'}</small>
-                    </div>
-                </div>
-                
-                <div class="post-body mb-3">
-                    ${post.tema ? `<span class="badge-topic mb-2 d-inline-block">${post.tema}</span>` : ''}
-                    <p style="color: #ddd; white-space: pre-line;">${post.content}</p>
-                    
-                    ${post.link ? `
-                        <a href="${post.link}" target="_blank" class="text-info d-flex align-items-center gap-2 p-2 rounded" style="background: rgba(0,242,255,0.1); text-decoration: none;">
-                            <i class="ph-bold ph-link"></i> ${post.link}
-                        </a>` : ''}
-                </div>
+        let html = '';
+        posts.forEach(post => {
+            // Assume que 'isLiked' e 'comments' estão no seu modelo de dados
+            const isLiked = post.isLiked || false; 
+            const likeIcon = isLiked ? 'bi-heart-fill text-danger' : 'bi-heart';
+            const commentsCount = post.comments ? post.comments.length : 0;
+            const commentsHtml = renderComments(post.comments || []);
 
-                <div class="d-flex gap-4 border-top border-secondary pt-3">
-                    <button class="action-btn ${post.isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}', ${post.likes}, ${post.isLiked})">
-                        <i class="ph-fill ph-heart"></i> ${post.likes} Curtidas
-                    </button>
-                    <button class="action-btn" onclick="toggleComments('${post.id}')">
-                        <i class="ph-bold ph-chat-circle"></i> ${post.comments.length} Comentários
-                    </button>
-                </div>
-
-                <div id="comments-${post.id}" class="comments-section" style="display: none;">
-                    <div class="comments-list mb-3" style="max-height: 200px; overflow-y: auto;">
-                        ${post.comments.length ? post.comments.map(c => `
-                            <div class="single-comment">
-                                <div class="comment-user">${c.user}</div>
-                                <p class="comment-text">${c.text}</p>
-                            </div>
-                        `).join('') : '<small class="text-muted">Nenhum comentário ainda.</small>'}
+            html += `
+                <div class="card post-card glass-bg mb-4">
+                    <div class="card-header bg-dark-glass d-flex justify-content-between align-items-center">
+                        <span class="text-primary fw-bold">${post.user}</span>
+                        <span class="text-light-gray small">${new Date(post.createdAt).toLocaleDateString()}</span>
                     </div>
-                    
-                    <form onsubmit="submitComment(event, '${post.id}')" class="d-flex gap-2">
-                        <input type="text" class="form-control form-control-sm" placeholder="Escreva um comentário..." required>
-                        <button type="submit" class="btn btn-sm btn-primary"><i class="ph-bold ph-paper-plane-right"></i></button>
-                    </form>
+                    <div class="card-body">
+                        <p class="card-text text-white">${post.content}</p>
+                    </div>
+                    <div class="card-footer bg-dark-glass">
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-action" onclick="toggleLike('${post.id}', ${post.likes || 0}, ${isLiked})">
+                                <i class="bi ${likeIcon}"></i> ${post.likes || 0} Likes
+                            </button>
+                            <button class="btn btn-sm btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#comments-${post.id}" aria-expanded="false" aria-controls="comments-${post.id}">
+                                <i class="bi bi-chat-text"></i> ${commentsCount} Comentários
+                            </button>
+                        </div>
+                        
+                        <div class="collapse mt-3" id="comments-${post.id}">
+                            ${commentsHtml}
+                            <form onsubmit="submitComment(event, '${post.id}')" class="mt-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm bg-dark-glass text-white border-0" placeholder="Seu comentário...">
+                                    <button class="btn btn-primary btn-sm" type="submit">Enviar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        });
+        container.innerHTML = html;
 
     } catch (error) {
-        container.innerHTML = '<p class="text-danger text-center">Erro ao carregar posts.</p>';
+        console.error('Erro ao carregar posts:', error);
+        container.innerHTML = '<p class="text-danger text-center py-5">Erro ao carregar o feed. Verifique sua conexão e a política RLS (SELECT).</p>';
     }
 }
 
-// --- CRIAR POST ---
+function renderComments(comments) {
+    if (comments.length === 0) return '<p class="small text-light-gray">Nenhum comentário ainda.</p>';
+    
+    let html = '<ul class="list-unstyled small">';
+    comments.forEach(c => {
+        html += `<li><span class="fw-bold text-info">${c.user}:</span> <span class="text-light-gray">${c.text}</span></li>`;
+    });
+    html += '</ul>';
+    return html;
+}
+
+// --- NOVO POST (POST) - AGORA USANDO SUPABASE --
 async function handleNewPost(e) {
     e.preventDefault();
-    const tema = document.getElementById('post-tema').value;
-    const msg = document.getElementById('post-msg').value;
-    const link = document.getElementById('post-link').value;
+    const content = document.getElementById('post-content').value.trim();
+    if (!content) return;
 
-    const novoPost = {
-        user: {
-            username: "@" + currentUser.login,
-            avatarUrl: null,
-            age: "N/A",
-            location: currentUser.localizacao || "Brasil",
-            occupation: currentUser.profissao || "Estudante"
-        },
-        content: msg,
-        link: link || null,
-        tema: tema || null,
-        comments: [],
+    const newPost = {
+        user: "@" + currentUser.login,
+        userId: currentUser.id,
+        content: content,
         likes: 0,
-        isLiked: false
+        isLiked: false, // Inicia como não curtido
+        comments: [],
+        createdAt: new Date().toISOString()
     };
-
+    
     try {
-        await fetch(`${'techeduvercel.vercel.app'}/posts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novoPost)
-        });
+        // 🚨 CORREÇÃO POST: Insere o novo post
+        const { error } = await supabase
+            .from('posts')
+            .insert([newPost]);
+
+        if (error) throw new Error(error.message);
+
+        document.getElementById('post-content').value = '';
+        await loadPosts();
         
-        // Limpa form e recarrega
-        e.target.reset();
-        loadPosts();
     } catch (error) {
-        alert("Erro ao publicar.");
+        console.error('Erro ao postar:', error);
+        alert(`❌ Falha ao criar post. Verifique a política RLS (INSERT). Detalhe: ${error.message}`);
     }
 }
 
-// --- CURTIR ---
+// --- LIKE (PATCH) - AGORA USANDO SUPABASE --
 window.toggleLike = async (id, currentLikes, isLiked) => {
     const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
     
-    await fetch(`${'techeduvercel.vercel.app'}/posts/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ likes: newLikes, isLiked: !isLiked })
-    });
-    loadPosts();
+    try {
+        // 🚨 CORREÇÃO PATCH: Atualiza likes e isLiked
+        const { error } = await supabase
+            .from('posts')
+            .update({ likes: newLikes, isLiked: !isLiked })
+            .eq('id', id);
+
+        if (error) throw new Error(error.message);
+
+        loadPosts();
+
+    } catch (error) {
+        console.error('Erro ao curtir/descurtir:', error);
+        alert(`❌ Falha ao curtir. Verifique a política RLS (UPDATE). Detalhe: ${error.message}`);
+    }
 };
 
-// --- COMENTAR ---
+// --- COMENTAR (PATCH) - AGORA USANDO SUPABASE --
 window.submitComment = async (e, postId) => {
     e.preventDefault();
     const input = e.target.querySelector('input');
     const text = input.value;
+    if (!text) return;
 
-    // 1. Pega o post para não perder comentários antigos
-    const res = await fetch(`${'techeduvercel.vercel.app'}/posts/${postId}`);
-    const post = await res.json();
+    try {
+        // 1. Pega o post atual para não perder comentários antigos
+        const { data: postArray, error: fetchError } = await supabase
+            .from('posts')
+            .select('comments')
+            .eq('id', postId)
+            .single();
 
-    const newComment = {
-        user: "@" + currentUser.login,
-        text: text
-    };
+        if (fetchError) throw new Error(`Falha ao buscar post: ${fetchError.message}`);
+        const post = postArray;
 
-    // 2. Atualiza
-    await fetch(`${'techeduvercel.vercel.app'}/posts/${postId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comments: [...post.comments, newComment] })
-    });
+        const newComment = {
+            user: "@" + currentUser.login,
+            text: text
+        };
 
-    // 3. Recarrega e reabre a aba de comentários
-    await loadPosts();
-    const commentsDiv = document.getElementById(`comments-${postId}`);
-    if(commentsDiv) commentsDiv.style.display = 'block';
-};
+        const updatedComments = [...(post.comments || []), newComment];
 
-// --- MOSTRAR/ESCONDER COMENTÁRIOS ---
-window.toggleComments = (id) => {
-    const el = document.getElementById(`comments-${id}`);
-    if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        // 2. Atualiza (PATCH)
+        const { error: updateError } = await supabase
+            .from('posts')
+            .update({ comments: updatedComments })
+            .eq('id', postId);
+
+        if (updateError) throw new Error(updateError.message);
+
+        // 3. Recarrega e reabre a aba de comentários
+        input.value = '';
+        await loadPosts();
+        
+        // Simula clique para reabrir a seção de comentários
+        const commentsToggle = document.querySelector(`[data-bs-target="#comments-${postId}"]`);
+        if (commentsToggle) commentsToggle.click();
+
+    } catch (error) {
+        console.error('Erro ao comentar:', error);
+        alert(`❌ Falha ao comentar. Detalhe: ${error.message}`);
+    }
 };

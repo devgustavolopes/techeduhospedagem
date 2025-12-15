@@ -1,66 +1,57 @@
+// Arquivo: assets/js/script-login.js (Ou onde ele estiver)
 
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
-// --- CONFIGURAÇÕES (CORRIGIDAS DEFINITIVAMENTE) ---
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// --- CONFIGURAÇÕES --
 const LOGIN_URL = "login.html";
 const HOME_URL = "index.html"; 
-let RETURN_URL = "dashboard.html"; // Página restrita padrão
-// 🚨 CORRETO: URL Padrão do JSON Server
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+let RETURN_URL = "dashboard.html"; 
 
-// 💯 CORREÇÃO FINAL: DECLARANDO A VARIÁVEL USANDO A ROTA CONFIRMADA
-const COLLECTION_NAME = '/usuarios'; 
-
-// Objeto para o banco de dados
+// Objeto para o banco de dados (ainda usados para armazenar em memória)
 var db_usuarios = {};
 var usuarioCorrente = {};
 
 // Inicializa a aplicação
 function initLoginApp() {
-    // Carrega usuários ao iniciar qualquer página
     carregarUsuarios(() => {
-        console.log('Banco de dados carregado.');
+        console.log('Banco de dados de usuários carregado do Supabase.');
     });
 
-    // Verifica se estamos em uma página que EXIGE login
     const path = window.location.pathname;
     const isRestricted = path.includes('dashboard.html');
 
     if (isRestricted) {
-        // Recupera usuário da sessão
         const usuarioJSON = sessionStorage.getItem('usuarioCorrente');
         
         if (usuarioJSON) {
             usuarioCorrente = JSON.parse(usuarioJSON);
             showUserInfo();
         } else {
-            // Se não tem usuário e a página é restrita, manda pro login
             window.location.href = LOGIN_URL;
         }
     }
 }
 
-// Carrega usuários da API
-function carregarUsuarios(callback) {
-    // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME
-    fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}`) 
-        .then(response => response.json())
-        .then(data => {
-            db_usuarios = data;
-            if (callback) callback();
-        })
-        .catch(error => {
-            console.error('Erro ao carregar usuários:', error);
-            console.warn('⚠️ Erro de conexão! Verifique se a API está online ou se COLLECTION_NAME está correta.');
-        });
+// Carrega usuários da API (GET) - AGORA DO SUPABASE
+async function carregarUsuarios(callback) {
+    const { data, error } = await supabase
+        .from('usuarios')
+        .select('*');
+
+    if (error) {
+        console.error('Erro ao carregar usuários do Supabase:', error);
+        alert('Erro de conexão com o banco de dados. Verifique o console.');
+        return;
+    }
+    
+    db_usuarios = data;
+    if (callback) callback();
 }
 
-// Função de Login
+// Função de Login (Lógica local, busca no array db_usuarios)
 function loginUser(login, senha) {
-    // Procura usuário no array baixado do servidor
     const user = db_usuarios.find(u => (u.login === login || u.email === login) && u.senha === senha);
-
     if (user) {
         usuarioCorrente = user;
         sessionStorage.setItem('usuarioCorrente', JSON.stringify(usuarioCorrente));
@@ -75,84 +66,69 @@ function logoutUser() {
     window.location.href = LOGIN_URL;
 }
 
-// Função de Cadastro
-function addUser(nome, login, senha, email) {
-    // Cria o objeto com o campo 'login' incluído
-    const novoUsuario = { 
-        nome: nome, 
-        login: login, // Adicionado
-        senha: senha, 
+// Função de Cadastro (POST) - AGORA USANDO SUPABASE
+async function addUser(nome, login, senha, email) {
+    const novoUsuario = {
+        nome: nome,
+        login: login,
         email: email,
-        tipoUsuario: "usuario", // Padrão
-        profissao: "",
-        localizacao: "",
-        biografia: "",
-        interesses: [],
-        fotoUrl: ""
+        senha: senha,
+        tipoUsuario: 'estudante',
+        createdAt: new Date().toISOString()
     };
-
-    // 🚨 CORRETO: fetch com API_URL + COLLECTION_NAME para POST
-    fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(novoUsuario),
-    })
-    .then(response => response.json())
-    .then(() => {
-        alert("Cadastro realizado com sucesso! Faça login.");
-        window.location.href = LOGIN_URL;
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert("Erro ao cadastrar. Verifique sua conexão com a API.");
-    });
-}
-
-// Mostra informações no Dashboard
-function showUserInfo() {
-    // Procura elementos na tela para preencher
-    const nomeElements = document.querySelectorAll('.user-name'); 
-    const avatarElements = document.querySelectorAll('.avatar-gradient');
     
-    if (usuarioCorrente.nome) {
-        nomeElements.forEach(el => el.textContent = usuarioCorrente.nome);
-        // Pega as iniciais do nome para o avatar
-        const iniciais = usuarioCorrente.nome.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-        avatarElements.forEach(el => el.textContent = iniciais);
+    const { data: createdUser, error } = await supabase
+        .from('usuarios')
+        .insert([novoUsuario])
+        .select(); 
+
+    if (error) {
+        console.error('Erro Supabase ao cadastrar:', error);
+        alert(`❌ Falha ao cadastrar: ${error.message}. Verifique a política RLS (INSERT) da tabela 'usuarios'.`);
+        return;
+    }
+
+    if (createdUser && createdUser.length > 0) {
+        usuarioCorrente = createdUser[0];
+        sessionStorage.setItem('usuarioCorrente', JSON.stringify(usuarioCorrente));
+        alert('✅ Cadastro realizado com sucesso! Bem-vindo(a)!');
+        window.location.href = RETURN_URL;
     }
 }
 
-// --- LÓGICA DE EVENTOS (O "COLA" ENTRE HTML E JS) ---
+// --- FUNÇÕES DE SETUP DA PÁGINA ---
+
+function showUserInfo() {
+    const userDisplay = document.getElementById('user-display');
+    if (userDisplay) {
+        userDisplay.innerText = `Olá, ${usuarioCorrente.nome.split(' ')[0]}`;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initLoginApp();
-
-    // 1. Lógica do Formulário de LOGIN
-    const formLogin = document.getElementById('form-login');
-    if (formLogin) {
-        formLogin.addEventListener('submit', (e) => {
+    
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Permite login por email ou login
-            const credential = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-
-            // O login só funcionará se carregarUsuarios funcionar, que agora está corrigido.
-            if (loginUser(credential, pass)) {
+            const login = document.getElementById('log-login').value.trim();
+            const senha = document.getElementById('log-senha').value.trim();
+            
+            if (loginUser(login, senha)) {
                 window.location.href = RETURN_URL;
             } else {
-                alert('Usuário ou senha incorretos!');
+                alert('Login ou senha incorretos. Tente novamente.');
             }
         });
     }
 
-    // 2. Lógica do Formulário de CADASTRO (Na Home)
-    const formCadastro = document.getElementById('form-cadastro');
-    
-    if (formCadastro) {
-        formCadastro.addEventListener('submit', async (e) => { 
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => { 
             e.preventDefault();
             
-            // Pegando os valores
-            const login = document.getElementById('reg-login').value.trim(); 
+            const login = document.getElementById('reg-login').value.trim();
             const nome = document.getElementById('reg-nome').value.trim();
             const email = document.getElementById('reg-email').value.trim();
             const senha = document.getElementById('reg-senha').value.trim();
@@ -163,28 +139,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // --- PASSO IMPORTANTE: VERIFICAÇÃO DE DUPLICIDADE ---
-                // 🚨 CORRETO: Usando a variável COLLECTION_NAME
-                const response = await fetch(`${techeduvercel.vercel.app}${COLLECTION_NAME}?login=${login}`);
-                const existingUsers = await response.json();
+                // --- VERIFICAÇÃO DE DUPLICIDADE (Supabase) ---
+                const { data: existingUsers, error: checkError } = await supabase
+                    .from('usuarios')
+                    .select('login')
+                    .eq('login', login); // Verifica se o login já existe
+
+                if (checkError) throw new Error(checkError.message);
 
                 if (existingUsers.length > 0) {
-                    // Se a lista voltou com algum item, o usuário já existe
                     alert(`O usuário "${login}" já está em uso. Escolha outro.`);
-                    return; // Para tudo e não cadastra
+                    return;
                 }
 
-                // Se chegou aqui, o usuário está livre. Pode cadastrar!
-                addUser(nome, login, senha, email);
+                await addUser(nome, login, senha, email); 
 
             } catch (error) {
                 console.error("Erro ao verificar usuário:", error);
-                alert("Erro de conexão ao verificar disponibilidade do usuário.");
+                alert(`Erro de conexão ao verificar disponibilidade do usuário: ${error.message}`);
             }
         });
     }
     
-    // 3. Botão de Logout
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', (e) => {

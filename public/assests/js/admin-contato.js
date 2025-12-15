@@ -1,12 +1,15 @@
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+// Arquivo: admin-contato.js
+
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// REMOVIDO: const API_URL = 'techeduvercel.vercel.app';
 let replyModalObj = null;
 
-// --- DADOS DO EMAILJS (Substitua pelos seus dados reais) ---
-const EMAILJS_PUBLIC_KEY = '7SH-eQPuP4ygPWwvL'; // Seu User ID/Public Key
-const EMAILJS_SERVICE_ID = 'service_oc8p8t9'; // Seu Service ID
-const EMAILJS_TEMPLATE_ID = 'template_tjrlnso'; // Seu Template ID
+// --- DADOS DO EMAILJS (Inalterados, usados para enviar o e-mail) ---\r\n
+const EMAILJS_PUBLIC_KEY = '7SH-eQPuP4ygPWwvL'; 
+const EMAILJS_SERVICE_ID = 'service_oc8p8t9'; 
+const EMAILJS_TEMPLATE_ID = 'template_tjrlnso'; 
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializa o Modal do Bootstrap
@@ -22,183 +25,141 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configura o formulário de resposta
     const formResposta = document.getElementById('form-resposta');
     if (formResposta) {
-        // Agora o submit chama a nova lógica unificada
         formResposta.addEventListener('submit', handleReplySubmit);
     }
 });
 
-// --- FUNÇÕES DE CARREGAMENTO, MODAL E EXCLUSÃO (Inalteradas, exceto a chamada no botão) ---
-
+// --- CARREGAR MENSAGENS (GET) - AGORA USANDO SUPABASE --
 async function loadMessages() {
     const tbody = document.getElementById('lista-contatos');
     
     // Elementos dos contadores
     const elTotal = document.getElementById('count-total');
     const elPending = document.getElementById('count-pending');
-    const elAnswered = document.getElementById('count-answered');
 
     try {
-        const res = await fetch('techeduvercel.vercel.app');
-        const messages = await res.json();
+        // 🚨 CORREÇÃO GET: Busca todas as mensagens
+        const { data: messages, error } = await supabase
+            .from('contatos')
+            .select('*')
+            .order('dataEnvio', { ascending: false }); // Últimas mensagens primeiro
 
-        // --- LÓGICA DOS CONTADORES ---
-        const total = messages.length;
-        const respondidos = messages.filter(m => m.respondido === true).length;
-        const pendentes = total - respondidos;
+        if (error) throw new Error(error.message);
 
-        if(elTotal) elTotal.innerText = total;
-        if(elAnswered) elAnswered.innerText = respondidos;
-        if(elPending) elPending.innerText = pendentes;
+        // Contadores
+        const totalCount = messages.length;
+        const pendingCount = messages.filter(m => !m.respondido).length;
+        
+        if (elTotal) elTotal.innerText = totalCount.toString();
+        if (elPending) elPending.innerText = pendingCount.toString();
 
-        // --- RENDERIZAÇÃO DA TABELA ---
-        if (total === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                        Nenhuma mensagem encontrada.
-                    </td>
-                </tr>`;
-            return;
+        // Renderização
+        let html = '';
+        if (messages.length === 0) {
+            html = '<tr><td colspan="5" class="text-center py-4 text-light-gray">Nenhuma mensagem de contato recebida.</td></tr>';
+        } else {
+            messages.forEach(msg => {
+                const statusBadge = msg.respondido 
+                    ? '<span class="badge bg-success-light text-success">Respondido</span>' 
+                    : '<span class="badge bg-warning-light text-warning">Pendente</span>';
+                
+                const deleteBtn = `<button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">Excluir</button>`;
+                const replyBtn = !msg.respondido 
+                    ? `<button class="btn btn-sm btn-primary ms-2" onclick="openReply('${msg.id}', '${msg.email}', '${msg.mensagem.replace(/'/g, "\\'")}')">Responder</button>` 
+                    : `<button class="btn btn-sm btn-outline-secondary ms-2" disabled>Respondido</button>`;
+
+                html += `
+                    <tr>
+                        <td>${msg.id}</td>
+                        <td class="text-primary fw-bold">${msg.nome}</td>
+                        <td>${msg.email}</td>
+                        <td>${statusBadge}</td>
+                        <td>${new Date(msg.dataEnvio).toLocaleString()}</td>
+                        <td class="text-end">${deleteBtn}${replyBtn}</td>
+                    </tr>
+                `;
+            });
         }
 
-        tbody.innerHTML = messages.map(msg => {
-            // AQUI ESTÁ A MÁGICA DO BOTÃO
-            // Se já foi respondido, mostra o Check Verde. Se não, mostra o Botão.
-            // ATENÇÃO: Adicionei nome e assunto para passar ao modal
-            const botaoAcao = msg.respondido 
-                ? `<span class="badge bg-success p-2 me-2" style="cursor: default; font-weight: 500;">
-                     <i class="ph-bold ph-check"></i> Respondido
-                   </span>`
-                : `<button class="btn btn-sm btn-outline-primary me-2" 
-                         onclick='openReplyModal("${msg.id}", "${msg.email}", "${msg.conteudoctt || msg.mensagem || ''}", "${msg.nome}", "${msg.assuntoctt || msg.assunto || 'Sem Assunto'}")'
-                         title="Responder">
-                         <i class="ph-bold ph-arrow-u-up-left"></i>
-                    </button>`;
-
-            return `
-            <tr>
-                <td class="ps-4 fw-bold text-white">${msg.nome}</td>
-                <td>${msg.email}</td>
-                <td>${msg.assuntoctt || msg.assunto || '<span class="text-muted">Sem assunto</span>'}</td>
-                <td>
-                    <span class="d-inline-block text-truncate" style="max-width: 200px; color: #aaa;">
-                        ${msg.conteudoctt || msg.mensagem || ''}
-                    </span>
-                </td>
-                <td>
-                    ${msg.linkctt ? `<a href="${msg.linkctt}" target="_blank" class="text-info text-decoration-none"><i class="ph-bold ph-link"></i> Link</a>` : '-'}
-                </td>
-                <td class="text-end pe-4">
-                    
-                    ${botaoAcao}
-                    
-                    <button class="btn btn-sm btn-outline-danger" 
-                            onclick="deleteMessage('${msg.id}')"
-                            title="Excluir">
-                        <i class="ph-bold ph-trash"></i>
-                    </button>
-                </td>
-            </tr>
-            `;
-        }).join('');
+        if(tbody) tbody.innerHTML = html;
 
     } catch (error) {
-        console.error(error);
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar mensagens.</td></tr>`;
+        console.error('Erro ao carregar mensagens:', error);
+        if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Falha ao carregar mensagens. Verifique a conexão.</td></tr>';
     }
 }
 
-// Função Global para abrir o modal (Atualizada com nome e assunto)
-window.openReplyModal = (id, email, msgOriginal, nome, assunto) => {
-    // Campos necessários para a API do EmailJS
-    document.getElementById('contato-id-hidden').value = id;
-    document.getElementById('email-destinatario').value = email;
-    // Novos campos para os dados do EmailJS
-    document.getElementById('nome-destinatario-hidden').value = nome;
-    document.getElementById('assunto-original-hidden').value = assunto;
-    document.getElementById('mensagem-original-hidden').value = msgOriginal; // Adicionado para Template Params
-
-    // Exibição no modal
-    document.getElementById('original-message-display').innerText = msgOriginal || "Conteúdo indisponível";
-    document.getElementById('corpo-resposta').value = ''; 
+// --- LÓGICA DE RESPOSTA (PATCH) - AGORA USANDO SUPABASE --
+window.openReply = (id, email, originalMsg) => {
+    // Armazena dados no formulário e abre o modal
+    const form = document.getElementById('form-resposta');
+    if (form) {
+        // @ts-ignore
+        form.dataset.id = id;
+        // @ts-ignore
+        form.dataset.email = email;
+    }
+    
+    document.getElementById('email-destinatario').innerText = email;
+    document.getElementById('original-message').innerText = originalMsg;
     
     if(replyModalObj) replyModalObj.show();
 };
 
-
-// Função Global para excluir mensagem
-window.deleteMessage = async (id) => {
-    if(confirm('Tem certeza que deseja excluir esta mensagem?')) {
-        try {
-            await fetch(`${'techeduvercel.vercel.app'}/${id}`, { method: 'DELETE' });
-            loadMessages(); 
-        } catch (error) {
-            alert('Erro ao excluir mensagem.');
-        }
-    }
-};
-
-// --- NOVA LÓGICA DE ENVIO UNIFICADA ---
 async function handleReplySubmit(e) {
     e.preventDefault();
     
-    // 1. Coleta de dados
-    const id = document.getElementById('contato-id-hidden').value;
-    const email = document.getElementById('email-destinatario').value;
-    const resposta = document.getElementById('corpo-resposta').value;
-
-    // Dados adicionais (usados no EmailJS)
-    const nomeDestinatario = document.getElementById('nome-destinatario-hidden').value;
-    const assuntoOriginal = document.getElementById('assunto-original-hidden').value;
-    const mensagemOriginal = document.getElementById('mensagem-original-hidden').value;
-
-    if(!resposta.trim()) return alert("Escreva uma resposta!");
-
-    const btnEnviarResposta = document.getElementById('btn-enviar-resposta');
-    if (btnEnviarResposta) {
-        btnEnviarResposta.disabled = true;
-        btnEnviarResposta.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+    // @ts-ignore
+    const id = e.target.dataset.id;
+    // @ts-ignore
+    const email = e.target.dataset.email;
+    const resposta = document.getElementById('textarea-resposta').value.trim();
+    
+    if (!id || !email || !resposta) {
+        alert("Erro interno ou resposta vazia.");
+        return;
     }
 
+    const btn = e.submitter;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+
+    const templateParams = {
+        to_email: email,
+        admin_response: resposta,
+        // Adicione mais parâmetros se necessário
+    };
 
     try {
-        // --- ETAPA 1: ENVIAR E-MAIL PELO EMAILJS ---
-        const templateParams = {
-            nome_destinatario: nomeDestinatario,
-            email_destinatario: email,
-            assunto_original: assuntoOriginal,
-            mensagem_original: mensagemOriginal,
-            corpo_da_minha_resposta: resposta
-        };
-
-        const emailJsResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        // --- ETAPA 1: ENVIO DE E-MAIL (EMAILJS - INALTERADO) ---
+        // Aqui o EmailJS é um serviço externo, e a chamada não falha no Vercel.
+        const emailJsResponse = await fetch(`https://api.emailjs.com/api/v1.0/email/send`, {
             method: 'POST',
             body: JSON.stringify({
                 service_id: EMAILJS_SERVICE_ID,
-                template_id: EMAILJS_TEMPLATE_ID,
                 user_id: EMAILJS_PUBLIC_KEY,
+                template_id: EMAILJS_TEMPLATE_ID,
                 template_params: templateParams
             }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
 
         if (!emailJsResponse.ok) {
-            // Se o EmailJS falhar, lança um erro para ir para o bloco catch
             throw new Error(`Falha ao enviar e-mail via EmailJS: ${emailJsResponse.statusText}`);
         }
         
-        // --- ETAPA 2: MARCAR COMO RESPONDIDO NO SEU SERVIDOR (APENAS SE O EMAIL FOR ENVIADO) ---
-        await fetch(`${'https://api.emailjs.com/api/v1.0/email/send'}/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+        // --- ETAPA 2: MARCAR COMO RESPONDIDO NO SUPABASE (PATCH) --
+        // 🚨 CORREÇÃO PATCH: Usando Supabase para atualizar status
+        const { error: updateError } = await supabase
+            .from('contatos')
+            .update({ 
                 respondido: true, 
                 dataResposta: new Date().toISOString(),
                 respostaAdmin: resposta 
             })
-        });
+            .eq('id', id);
+
+        if(updateError) throw new Error(`Falha ao atualizar status no Supabase: ${updateError.message}`);
 
         alert(`✅ Resposta enviada para ${email} e status atualizado!`);
         
@@ -209,10 +170,30 @@ async function handleReplySubmit(e) {
         console.error('Erro no fluxo de resposta:', error);
         alert(`❌ Ocorreu um erro: ${error.message || 'Falha ao enviar e/ou atualizar status.'}`);
     } finally {
-        // Volta o botão ao estado normal
-        if (btnEnviarResposta) {
-            btnEnviarResposta.disabled = false;
-            btnEnviarResposta.innerHTML = 'Enviar Resposta';
-        }
+        btn.disabled = false;
+        btn.innerHTML = 'Enviar Resposta';
+        // Limpa o textarea
+        document.getElementById('textarea-resposta').value = ''; 
     }
 }
+
+// --- FUNÇÃO DELETAR (DELETE) - AGORA USANDO SUPABASE ---
+window.deleteMessage = async (id) => {
+    if (confirm('Tem certeza que deseja excluir esta mensagem?')) {
+        try {
+            // 🚨 CORREÇÃO DELETE: Usando Supabase para deletar
+            const { error } = await supabase
+                .from('contatos')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw new Error(error.message);
+
+            alert('Mensagem excluída.');
+            loadMessages(); 
+        } catch (error) {
+            console.error('Erro ao excluir mensagem:', error);
+            alert(`❌ Erro ao excluir mensagem. Verifique a política RLS (DELETE). Detalhe: ${error.message}`);
+        }
+    }
+};

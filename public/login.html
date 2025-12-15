@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | TechEdu</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Zen+Dots&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/home.css"> <style>
+    <link rel="stylesheet" href="assets/css/home.css"> 
+    <style>
         /* Ajuste simples para centralizar o login */
         .login-body {
             display: flex; align-items: center; justify-content: center;
@@ -41,11 +42,63 @@
             </button>
         </form>
         
-        <p style="text-align: center; color: #aaa; margin-top: 20px; font-size: 0.9rem;">
-            Ainda não tem conta? <a href="index.html#cadastro" style="color: #9370DB; font-weight: bold;">Cadastre-se</a>
+        <p style="text-align: center; color: #aaa; margin: 1.5rem 0;">
+            Não tem uma conta? <a href="#" id="toggle-signup" style="color: var(--secondary); text-decoration: none;">Cadastre-se</a>
         </p>
+        
+        <form class="tech-form" id="form-cadastro" style="display: none;">
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" id="reg-nome" required>
+            </div>
+            <div class="input-group">
+                <label>Login de Usuário (@)</label>
+                <input type="text" id="reg-login" required>
+            </div>
+            <div class="input-group">
+                <label>E-mail</label>
+                <input type="email" id="reg-email" required>
+            </div>
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" id="reg-senha" required>
+            </div>
+            
+            <button type="submit" class="btn-neon full-width">
+                CRIAR CONTA
+            </button>
+        </form>
+        
+        <p style="text-align: center; color: #aaa; margin: 1.5rem 0; display: none;" id="toggle-login-p">
+            Já tem uma conta? <a href="#" id="toggle-login" style="color: var(--secondary); text-decoration: none;">Faça Login</a>
+        </p>
+
     </div>
 
-    <script src="assets/js/script-login.js"></script>
+    <script src="js/supabaseClient.js" type="module"></script>
+    <script src="assets/js/script-login.js" type="module"></script>
+    
+    <script>
+        // Lógica de toggle para 'Cadastrar' e 'Entrar'
+        document.getElementById('toggle-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('form-login').style.display = 'none';
+            document.getElementById('form-cadastro').style.display = 'block';
+            document.getElementById('toggle-signup').parentElement.style.display = 'none';
+            document.getElementById('toggle-login-p').style.display = 'block';
+            document.querySelector('.form-header h3').innerText = 'Crie sua conta';
+            document.querySelector('.form-header p').innerText = 'Comece sua jornada de estudos agora.';
+        });
+
+        document.getElementById('toggle-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('form-cadastro').style.display = 'none';
+            document.getElementById('form-login').style.display = 'block';
+            document.getElementById('toggle-login-p').style.display = 'none';
+            document.getElementById('toggle-signup').parentElement.style.display = 'block';
+            document.querySelector('.form-header h3').innerText = 'Bem-vindo de volta';
+            document.querySelector('.form-header p').innerText = 'Insira suas credenciais para acessar.';
+        });
+    </script>
 </body>
 </html>

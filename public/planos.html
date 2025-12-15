@@ -44,7 +44,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/planos.js"></script>
+    <script src="js/supabaseClient.js" type="module"></script>
+    <script src="assets/js/database.js" type="module"></script>
+    <script src="assets/js/planos.js" type="module"></script>
+    
+    <script>
+        window.goToPlan = (planId) => {
+            sessionStorage.setItem('currentPlanId', planId);
+            window.location.href = 'detalhe-plano.html';
+        };
+    </script>
 </body>
 </html>

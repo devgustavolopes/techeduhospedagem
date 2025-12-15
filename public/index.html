@@ -30,187 +30,94 @@
                 <a href="#faq-nav">Perguntas Frequentes</a>
             </nav>
 
-            <div class="auth-buttons">
-                <a href="login.html" class="btn-text">Entrar</a>
-                <a href="#cadastro" class="btn-primary small">
-                    Criar Plano Grátis <i class="ph-bold ph-arrow-right"></i>
-                </a>
+            <div class="actions">
+                <a href="login.html" class="btn-secondary">Entrar</a>
             </div>
-
-            <button class="mobile-menu-btn"><i class="ph-bold ph-list"></i></button>
         </div>
     </header>
 
     <main>
         <section class="hero-section">
-            <div class="hero-bg">
-                <img src="https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1920&auto=format&fit=crop"
-                    alt="Setup de Estudos">
-                <div class="hero-gradient"></div>
+            <div class="bg-slider">
+                <div class="bg-slide active" style="background-image: url('assets/img/hero1.jpg');"></div>
+                <div class="bg-slide" style="background-image: url('assets/img/hero2.jpg');"></div>
+                <div class="bg-slide" style="background-image: url('assets/img/hero3.jpg');"></div>
+                
+                <button class="slider-btn prev-btn" id="prevBtn"><i class="ph-bold ph-caret-left"></i></button>
+                <button class="slider-btn next-btn" id="nextBtn"><i class="ph-bold ph-caret-right"></i></button>
             </div>
-
-            <div class="container hero-container">
-                <div class="hero-text" data-aos="fade-up">
-                    <span class="tag-glow">Seu Planner Digital</span>
-                    <h1>Organize sua <br><span class="gradient-text">Jornada Tech</span>.</h1>
-                    <p>Pare de perder tempo decidindo o que estudar. Crie cronogramas inteligentes, centralize seus PDFs
-                        e acompanhe sua evolução em um só lugar.</p>
-
-                    <div class="hero-actions">
-                        <a href="#cadastro" class="btn-primary">
-                            Montar meu Cronograma
-                        </a>
-                        <a href="#funcionalidades" class="btn-secondary">Saber mais</a>
-                    </div>
-                </div>
-
-                <div class="hero-visual" data-aos="fade-left" data-aos-delay="200">
-                    <div class="glass-card-floating">
-                        <div class="icon-glow cyan mb-0"><i class="ph-fill ph-check-circle"></i></div>
-                        <h3 style="margin: 15px 0 5px; color: white;">Metas da Semana</h3>
-                        <p style="font-size: 0.9rem; margin-bottom: 20px; color: #a0a0b0;">Foco total na evolução.</p>
-
-                        <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: white;">
-                                <i class="ph-fill ph-check-square" style="color: var(--secondary);"></i> Ler PDF de
-                                Lógica
-                            </div>
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: white;">
-                                <i class="ph-fill ph-check-square" style="color: var(--secondary);"></i> Praticar SQL
-                            </div>
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.5);">
-                                <i class="ph-bold ph-square"></i> Revisar Git
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            
+            <div class="overlay"></div>
+            
+            <div class="container hero-content" data-aos="fade-up">
+                <h1>Organize seu <span class="gradient-text">futuro tech</span>.</h1>
+                <p>Crie, acompanhe e evolua seus planos de estudos em Hardware, DevOps, Programação e mais. </p>
+                <a href="login.html" class="btn-primary">Começar Agora</a>
             </div>
         </section>
 
         <section class="stats-section">
-            <div class="container">
-                <div class="stats-grid">
-                    <div class="stat-item" data-aos="fade-up">
-                        <h3>+15k</h3>
-                        <p>Planos Criados</p>
-                    </div>
-                    <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
-                        <h3>50k</h3>
-                        <p>Materiais Organizados</p>
-                    </div>
-                    <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
-                        <h3>98%</h3>
-                        <p>Foco Aumentado</p>
-                    </div>
+            <div class="container stats-content" data-aos="fade-up">
+                <div class="stat-item">
+                    <div class="counter" data-target="25">0</div>
+                    <p>Mil usuários</p>
+                </div>
+                <div class="stat-item">
+                    <div class="counter" data-target="15000">0</div>
+                    <p>Planos criados</p>
+                </div>
+                <div class="stat-item">
+                    <div class="counter" data-target="45">0</div>
+                    <p>Temas de estudo</p>
                 </div>
             </div>
         </section>
 
         <section class="features-section" id="funcionalidades">
-            <div class="container">
-                <div class="section-header" data-aos="fade-up">
-                    <h2>Estude com <span class="gradient-text">Estratégia</span></h2>
-                    <p>A ferramenta que faltava para você sair do zero e alcançar seus objetivos.</p>
-                </div>
+            <div class="container features-content">
+                <h2 class="section-title" data-aos="fade-up">Como <span class="gradient-text">Funciona</span></h2>
 
-                <div class="features-grid">
-                    <div class="feature-card" data-aos="zoom-in" data-aos-delay="0">
-                        <div class="icon-glow purple"><i class="ph-fill ph-kanban"></i></div>
-                        <h3>Cronograma Flexível</h3>
-                        <p>Defina o que estudar e quando. O sistema adapta sua rotina para você não procrastinar.</p>
+                <div class="feature-grid">
+                    <div class="feature-card" data-aos="fade-right">
+                        <i class="ph-bold ph-scroll"></i>
+                        <h3>Planeje em Minutos</h3>
+                        <p>Escolha sua categoria (DevOps, Hardware, etc.) e selecione os tópicos que deseja dominar para criar um plano focado.</p>
                     </div>
-
-                    <div class="feature-card" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="icon-glow cyan"><i class="ph-fill ph-files"></i></div>
-                        <h3>Central de Arquivos</h3>
-                        <p>Salve links, PDFs e anotações vinculados a cada tópico. Chega de arquivos perdidos.</p>
+                    <div class="feature-card" data-aos="fade-up">
+                        <i class="ph-bold ph-chart-line"></i>
+                        <h3>Acompanhe o Progresso</h3>
+                        <p>Marque tarefas como concluídas e veja a barra de progresso do seu plano subir. Motivação visual garantida.</p>
                     </div>
-
-                    <div class="feature-card" data-aos="zoom-in" data-aos-delay="200">
-                        <div class="icon-glow pink"><i class="ph-fill ph-chart-bar"></i></div>
-                        <h3>Métricas de Evolução</h3>
-                        <p>Visualize seu progresso real. Veja o quanto você avançou em cada tecnologia.</p>
+                    <div class="feature-card" data-aos="fade-left">
+                        <i class="ph-bold ph-users-three"></i>
+                        <h3>Comunidade Ativa</h3>
+                        <p>Tire dúvidas, compartilhe links e celebre vitórias com outros estudantes de tecnologia na nossa comunidade.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="lead-section" id="cadastro">
-            <div class="container split-layout">
-
-                <div class="text-content" data-aos="fade-right">
-                    <h2>Pare de estudar <br><span class="gradient-text">no escuro.</span></h2>
-                    <p>Junte-se a milhares de estudantes que trocaram a desorganização pelo planejamento eficiente.</p>
-
-                    <div class="benefits-list">
-                        <div class="benefit-item">
-                            <i class="ph-fill ph-check-circle"></i> Acesso 100% Gratuito
-                        </div>
-                        <div class="benefit-item">
-                            <i class="ph-fill ph-check-circle"></i> Sem limites de tópicos
-                        </div>
-                        <div class="benefit-item">
-                            <i class="ph-fill ph-check-circle"></i> Comunidade ativa
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-wrapper" data-aos="fade-left">
-                    <div class="form-header">
-                        <h3>Crie seu Plano</h3>
-                        <p>Preencha para começar a organizar.</p>
-                    </div>
-                    <form class="tech-form" id="form-cadastro">
-
-                        <div class="input-group">
-                            <label>Nome de Usuário (Login)</label>
-                            <input type="text" id="reg-login" placeholder="Ex: dev_master" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Nome Completo</label>
-                            <input type="text" id="reg-nome" placeholder="Ex: Ana Souza" required>
-                        </div>
-                        <div class="input-group">
-                            <label>E-mail</label>
-                            <input type="email" id="reg-email" placeholder="seu@email.com" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Senha</label>
-                            <input type="password" id="reg-senha" placeholder="Crie uma senha forte" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Seu Foco Principal</label>
-                            <select required>
-                                <option value="" disabled selected>Selecione...</option>
-                                <option value="frontend">Front-end</option>
-                                <option value="backend">Back-end</option>
-                                <option value="dados">Ciência de Dados</option>
-                                <option value="mobile">Mobile</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary full-width">
-                            CRIAR CONTA GRÁTIS
-                        </button>
-                    </form>
-                </div>
-
+        <section class="cta-section">
+            <div class="container cta-content" data-aos="zoom-in">
+                <h2>Pronto para <span class="gradient-text">Começar?</span></h2>
+                <p>Diga adeus à confusão. Seu caminho para o sucesso tech começa aqui.</p>
+                <a href="login.html" class="btn-primary">Criar Minha Conta</a>
             </div>
         </section>
 
         <section class="faq-section" id="faq-nav">
-            <div class="container">
-                <div class="faq-wrapper">
-                    <h2 data-aos="fade-right">Perguntas <span class="gradient-text">Frequentes</span></h2>
+            <div class="container faq-content">
+                <h2 class="section-title" data-aos="fade-up">Perguntas <span class="gradient-text">Frequentes</span></h2>
 
-                    <div class="faq-list" data-aos="fade-left">
+                <div class="faq-grid" data-aos="fade-up" data-aos-delay="200">
+                    <div>
                         <details class="faq-item">
-                            <summary>A plataforma oferece cursos? <i class="ph-bold ph-caret-down"></i></summary>
-                            <p>Não. O TechEdu é uma ferramenta para você **organizar** os cursos, PDFs e aulas que você
-                                já tem ou encontra na internet.</p>
+                            <summary>O que a TechEdu pode me ajudar a estudar? <i class="ph-bold ph-caret-down"></i></summary>
+                            <p>Temos tópicos focados em Hardwares de PC, Fundamentos de DevOps, Git, e em breve mais sobre Back-end e Front-end.</p>
+                        </details>
+                        <details class="faq-item">
+                            <summary>Como marco uma tarefa como concluída? <i class="ph-bold ph-caret-down"></i></summary>
+                            <p>Dentro do seu plano, basta clicar no checkbox ao lado da tarefa para marcá-la. Seu progresso será salvo automaticamente.</p>
                         </details>
                         <details class="faq-item">
                             <summary>Posso salvar meus arquivos? <i class="ph-bold ph-caret-down"></i></summary>
@@ -242,7 +149,8 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>AOS.init({ duration: 800, once: true });</script>
 
-    <script src="assets/js/script-login.js"></script>
+    <script src="assets/js/script-index.js"></script>
+
 </body>
 
 </html>

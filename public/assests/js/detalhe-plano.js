@@ -1,7 +1,12 @@
-// CORREÇÃO ESSENCIAL: Adicione o protocolo para que o navegador a reconheça como uma URL válida.
-const API_URL = 'https://techeduvercel.vercel.app';
-// O uso no 'fetch' já está correto: fetch(`${API_URL}/posts`)
+// Arquivo: detalhe-plano.js
+
+// Importa o cliente Supabase
+import { supabase } from './supabaseClient.js'; // Caminho relativo ao script principal, ajuste se necessário
+
+// REMOVIDO: const API_URL = 'techeduvercel.vercel.app';
 let currentPlan = null; 
+// @ts-ignore
+const studyDatabase = window.studyDatabase; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verificação de Pré-requisitos
@@ -21,14 +26,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * Carrega o plano do usuário do JSON Server.
+ * Carrega o plano do usuário do Supabase (GET por ID).
  */
 async function loadPlanDetails(id) {
     try {
-        const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${id}`);
-        if (!res.ok) throw new Error('Plano não encontrado.');
+        // 🚨 CORREÇÃO GET: Busca por ID no Supabase
+        const { data: plan, error } = await supabase
+            .from('planos')
+            .select('*')
+            .eq('id', id)
+            .single(); // Espera apenas um resultado
+
+        if (error) throw new Error('Plano não encontrado.');
         
-        currentPlan = await res.json();
+        currentPlan = plan;
         
         // Proteção extra: verifica se o plano pertence ao usuário logado
         const user = JSON.parse(sessionStorage.getItem('usuarioCorrente'));
@@ -39,115 +50,83 @@ async function loadPlanDetails(id) {
         }
 
         document.getElementById('plan-title').innerText = currentPlan.title;
-        document.getElementById('plan-desc').innerText = currentPlan.description;
-        
-        // Renderiza tudo
-        renderModules();
+        document.getElementById('plan-category').innerText = currentPlan.category.toUpperCase();
+        document.getElementById('plan-description').innerText = currentPlan.description;
+
+        renderModules(); 
         updateProgressBar();
 
     } catch (error) {
-        console.error('Erro ao carregar plano:', error);
-        alert("Erro ao carregar detalhes do plano. Verifique se o JSON Server está ativo.");
-        window.location.href = 'planos.html';
+        console.error('Erro ao carregar detalhes do plano:', error);
+        alert('Falha ao carregar detalhes do plano. Verifique o console.');
     }
 }
 
-/**
- * Renderiza os accordions de tópicos e suas tarefas internas.
- */
+// ... (renderModules e updateProgressBar inalterados) ...
+
 function renderModules() {
     const container = document.getElementById('modules-container');
     container.innerHTML = '';
-
+    
+    // Mapeia os tópicos selecionados no plano atual
     currentPlan.topics.forEach(topic => {
-        // Pega o conteúdo estático (tarefas e recursos)
-        const content = studyDatabase[currentPlan.category]?.[topic.value];
-        if (!content) return;
+        // Pega os detalhes do database.js
+        const moduleDetails = studyDatabase[currentPlan.category]?.[topic.value];
 
-        const totalTasks = content.tasks.length;
-        const completedCount = topic.completedTasks.length;
-        const isComplete = totalTasks > 0 && completedCount === totalTasks;
+        if (!moduleDetails) {
+            console.warn(`Módulo ${topic.value} não encontrado no studyDatabase.`);
+            return;
+        }
 
-        // HTML das tarefas (Tasks estáticas)
-        const tasksHtml = content.tasks.map((taskText, index) => {
-            const isChecked = topic.completedTasks.includes(index);
-            const taskClass = isChecked ? 'text-gray-500' : 'text-white';
+        let taskHtml = '';
+        let completedCount = 0;
+
+        moduleDetails.tasks.forEach((task, index) => {
+            const isCompleted = topic.completedTasks.includes(index);
+            if (isCompleted) completedCount++;
             
-            return `
-                <div class="d-flex gap-3 align-items-start mb-3 p-2 rounded task-item">
-                    <input class="form-check-input mt-1" type="checkbox" 
-                           ${isChecked ? 'checked' : ''} 
-                           onchange="toggleTask('${topic.value}', ${index})"
-                           style="border-color: #555; background-color: ${isChecked ? '#00ff88' : 'rgba(255,255,255,0.1)'};">
-                    <label class="${taskClass}" style="${isChecked ? 'text-decoration: line-through;' : ''}">
-                        ${taskText}
-                    </label>
-                </div>
+            const checkedAttr = isCompleted ? 'checked' : '';
+            const cardClass = isCompleted ? 'task-completed' : 'task-pending';
+
+            taskHtml += `
+                <li class="list-group-item d-flex justify-content-between align-items-center ${cardClass}">
+                    ${task}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${index}" id="task-${topic.value}-${index}" ${checkedAttr}
+                            onclick="toggleTaskCompletion('${topic.value}', ${index}, this.checked)">
+                    </div>
+                </li>
             `;
-        }).join('');
+        });
+        
+        const totalTasks = moduleDetails.tasks.length;
+        const progressPercent = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
 
-        // Recursos Sugeridos
-         const resourcesHtml = content.resources.map(res => `
-            <p><a href="${res.url}" target="_blank" class="text-info"><i class="ph-bold ph-link"></i> ${res.title}</a></p>
-        `).join('');
-
-        // Card do Módulo
-        const moduleHtml = `
-            <details class="form-wrapper p-0 mb-3" ${isComplete ? '' : 'open'} style="border-left: 4px solid ${isComplete ? '#00ff88' : 'var(--primary)'};">
-                <summary class="p-3 d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
-                    <strong class="text-white h5 mb-0">${topic.text}</strong>
-                    <span class="badge ${isComplete ? 'bg-success' : 'bg-secondary'}">${completedCount}/${totalTasks}</span>
-                </summary>
-                <div class="p-3 border-top border-secondary">
-                    <h5 class="text-white mb-3">Tarefas:</h5>
-                    ${tasksHtml}
-                    ${content.resources.length ? '<h5 class="text-white mt-4 mb-2">Recursos Sugeridos:</h5>' : ''}
-                    ${resourcesHtml}
+        container.innerHTML += `
+            <div class="module-card card glass-bg mb-4">
+                <div class="card-header bg-dark-glass text-primary">
+                    ${moduleDetails.title || topic.text}
                 </div>
-            </details>
+                <div class="card-body">
+                    <p class="card-text text-light-gray">Progresso do Módulo: ${completedCount}/${totalTasks} tarefas (${progressPercent}%)</p>
+                    <div class="progress mb-3" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar" style="width: ${progressPercent}%;" aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <ul class="list-group list-group-flush task-list">
+                        ${taskHtml}
+                    </ul>
+                    ${moduleDetails.resources && moduleDetails.resources.length > 0 ? `
+                        <h6 class="mt-3 text-secondary">Recursos:</h6>
+                        <ul class="list-group list-group-flush">
+                            ${moduleDetails.resources.map(res => `<li class="list-group-item bg-transparent text-light-gray"><a href="${res.link}" target="_blank">${res.text}</a></li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            </div>
         `;
-        container.innerHTML += moduleHtml;
     });
 }
 
-/**
- * Marca/desmarca a tarefa e salva o novo estado no JSON Server usando PATCH.
- */
-window.toggleTask = async (topicValue, taskIndex) => {
-    const topic = currentPlan.topics.find(t => t.value === topicValue);
-    if (!topic) return;
-
-    // 1. Atualiza o estado localmente
-    if (topic.completedTasks.includes(taskIndex)) {
-        // Desmarcar: remove o índice
-        topic.completedTasks = topic.completedTasks.filter(i => i !== taskIndex);
-    } else {
-        // Marcar: adiciona o índice
-        topic.completedTasks.push(taskIndex);
-    }
-
-    try {
-        // 2. Salva o array de tópicos ATUALIZADO no servidor
-        const res = await fetch(`${'techeduvercel.vercel.app'}/planos/${currentPlan.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topics: currentPlan.topics }) // Envia apenas o campo 'topics'
-        });
-        
-        if (!res.ok) throw new Error('Falha ao salvar progresso.');
-
-        // 3. Re-renderiza a UI para refletir a mudança
-        renderModules(); 
-        updateProgressBar();
-    } catch (error) {
-        console.error('Erro ao salvar progresso:', error);
-        alert('Seu progresso não foi salvo. Verifique a porta 3000 do JSON Server.');
-    }
-};
-
-/**
- * Atualiza a barra de progresso principal.
- */
 function updateProgressBar() {
     let total = 0;
     let completed = 0;
@@ -165,9 +144,41 @@ function updateProgressBar() {
     const fill = document.getElementById('main-progress-bar');
     const text = document.getElementById('progress-text');
     
-    if (fill) {
-        fill.style.width = `${percent}%`;
-        fill.setAttribute('aria-valuenow', percent);
-    }
-    if (text) text.innerText = `${completed} de ${total} tarefas concluídas (${percent}%)`;
+    if(fill) fill.style.width = `${percent}%`;
+    if(text) text.innerText = `${percent}% do Plano concluído`;
 }
+
+/**
+ * Altera o status da tarefa e salva no Supabase (PATCH).
+ */
+window.toggleTaskCompletion = async (topicValue, taskId, isCompleted) => {
+    // 1. Atualiza o objeto local
+    const targetTopic = currentPlan.topics.find(t => t.value === topicValue);
+    if (!targetTopic) return;
+    
+    if (isCompleted) {
+        if (!targetTopic.completedTasks.includes(taskId)) {
+            targetTopic.completedTasks.push(taskId);
+        }
+    } else {
+        targetTopic.completedTasks = targetTopic.completedTasks.filter(id => id !== taskId);
+    }
+
+    try {
+        // 2. Salva o novo estado no Supabase
+        // 🚨 CORREÇÃO PATCH: Usando Supabase para atualizar
+        const { error } = await supabase
+            .from('planos')
+            .update({ topics: currentPlan.topics }) // Envia apenas o campo 'topics' atualizado
+            .eq('id', currentPlan.id);
+        
+        if (error) throw new Error(`Falha ao salvar progresso no Supabase: ${error.message}`);
+
+        // 3. Re-renderiza a UI para refletir a mudança
+        renderModules(); 
+        updateProgressBar();
+    } catch (error) {
+        console.error('Erro ao salvar progresso:', error);
+        alert(`❌ Seu progresso não foi salvo. Verifique a política RLS (UPDATE). Detalhe: ${error.message}`);
+    }
+};
