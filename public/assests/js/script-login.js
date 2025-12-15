@@ -5,7 +5,7 @@ const LOGIN_URL = "login.html";
 const HOME_URL = "index.html"; 
 let RETURN_URL = "dashboard.html"; // Página restrita padrão
 // 🚨 CORRETO: URL Padrão do JSON Server
-const API_URL = 'https://tech-edu-api-json.onrender.com'; 
+const API_URL = 'techeduvercel.vercel.app'; 
 
 // 💯 CORREÇÃO FINAL: DECLARANDO A VARIÁVEL USANDO A ROTA CONFIRMADA
 const COLLECTION_NAME = '/usuarios'; 
